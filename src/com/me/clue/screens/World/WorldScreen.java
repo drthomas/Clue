@@ -1,5 +1,8 @@
 package com.me.clue.screens.World;
 
+import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.input.GestureDetector.GestureListener;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
@@ -7,6 +10,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.me.clue.Clue;
@@ -20,8 +25,11 @@ import java.util.ArrayList;
 import javax.microedition.khronos.opengles.GL10;
 
 
-public class WorldScreen implements Screen, InputProcessor
+public class WorldScreen implements Screen, GestureListener
 {
+    private static final float CAMERA_WIDTH = 1280f;
+    private static final float CAMERA_HEIGHT = 720f;
+
     private World           world;
     private WorldRenderer   renderer;
     private WorldController controller;
@@ -56,12 +64,16 @@ public class WorldScreen implements Screen, InputProcessor
 
         loadTextures();
 
-        _camera = new OrthographicCamera(1280, 720);
+        _camera = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
+        _camera.update();
+
         _batch = new SpriteBatch();
 
         _sprite = new Sprite(_texture);
         _sprite.setOrigin(0, 0);
-        _sprite.setPosition(-_sprite.getWidth()/2,-_sprite.getHeight()/2);
+        _sprite.setPosition(-_sprite.getWidth() / 2, -_sprite.getHeight() / 2);
+
+        //_stage.addActor(_sprite);
     }
 
     private void loadTextures()
@@ -74,12 +86,13 @@ public class WorldScreen implements Screen, InputProcessor
     public void show()
     {
         Gdx.app.log("World Screen", "show called");
+        Gdx.input.setInputProcessor(new GestureDetector(this));
     }
 
     @Override
     public void render(float delta)
     {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
         _batch.setProjectionMatrix(_camera.combined);
@@ -120,50 +133,67 @@ public class WorldScreen implements Screen, InputProcessor
         Gdx.input.setInputProcessor(null);
     }
 
-    // * InputProcessor methods ***************************//
-
     @Override
-    public boolean keyDown(int keycode)
+    public boolean touchDown(float v, float v1, int i, int i1)
     {
         return false;
     }
 
     @Override
-    public boolean keyUp(int keycode)
+    public boolean tap(float v, float v1, int i, int i1)
     {
+        Gdx.app.log("World Screen:", "tap Called");
         return false;
     }
 
     @Override
-    public boolean keyTyped(char character)
+    public boolean longPress(float v, float v1)
     {
+        Gdx.app.log("World Screen:", "longPress Called");
         return false;
     }
 
     @Override
-    public boolean touchDown(int x, int y, int pointer, int button)
+    public boolean fling(float v, float v1, int i)
     {
+        Gdx.app.log("World Screen:", "fling Called");
         return false;
     }
 
     @Override
-    public boolean touchUp(int x, int y, int pointer, int button)
+    public boolean pan(float x, float y, float deltaX, float deltaY)
     {
+        Gdx.app.log("World Screen:", "pan Called");
+
+
+        _camera.translate(-deltaX, deltaY);
+        _camera.position.x = MathUtils.clamp(_camera.position.x, -(_sprite.getWidth() - Gdx.graphics.getWidth()) / 2,
+                (_sprite.getWidth() - Gdx.graphics.getWidth()) / 2);
+        _camera.position.y = MathUtils.clamp(_camera.position.y, -(_sprite.getHeight() - Gdx.graphics.getHeight()) / 2,
+                (_sprite.getHeight() - Gdx.graphics.getHeight()) / 2);
+        _camera.update();
+
         return false;
     }
 
     @Override
-    public boolean touchDragged(int x, int y, int pointer) {
+    public boolean panStop(float v, float v1, int i, int i1)
+    {
+        Gdx.app.log("World Screen:", "panStop Called");
         return false;
     }
 
     @Override
-    public boolean mouseMoved(int i, int i1) {
+    public boolean zoom(float v, float v1)
+    {
+        Gdx.app.log("World Screen:", "zoom Called");
         return false;
     }
 
     @Override
-    public boolean scrolled(int amount) {
+    public boolean pinch(Vector2 vector2, Vector2 vector21, Vector2 vector22, Vector2 vector23)
+    {
+        Gdx.app.log("World Screen:", "pinch Called");
         return false;
     }
 }
