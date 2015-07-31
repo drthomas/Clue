@@ -8,8 +8,8 @@ import com.me.clue.model.Home;
 
 public class HomeRenderer
 {
-    private static final float CAMERA_WIDTH = 10f;
-    private static final float CAMERA_HEIGHT = 7f;
+    private static final float CAMERA_WIDTH = 800f;
+    private static final float CAMERA_HEIGHT = 480f;
 
     private Home _home;
     private OrthographicCamera _cam;

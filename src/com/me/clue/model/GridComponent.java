@@ -193,8 +193,9 @@ public class GridComponent
                 _filled = true;
                 break;
             case ' ':
-            default:
                 _contentCode = Enums.GridContent.Empty;
+                break;
+            default:
                 break;
         }
     }

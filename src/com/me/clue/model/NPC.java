@@ -13,9 +13,9 @@ public class NPC extends BCharacter
     private int _currentPathIndex = 0;   //Current index on a path
     private GridComponent _currentGoal = new GridComponent();
 
-    public NPC(Game game)
+    public NPC(String name)
     {
-        super(game);
+        super(name);
     }
 
     public String ChooseRandomGoal()

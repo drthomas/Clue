@@ -26,9 +26,9 @@ public class PlayerCharacter extends BCharacter
     public ArrayList<Integer> getMovableLocation() { return _movableLocation; }
     public void setMovableLocations(ArrayList<Integer> list) { _movableLocation = list; }
 
-    public PlayerCharacter(Game game)
+    public PlayerCharacter(String name)
     {
-        super(game);
+        super(name);
 
         //_timer.Interval = 100;
         //_timer.Elapsed += new ElapsedEventHandler(TimerElapsedEvent);

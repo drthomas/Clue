@@ -2,7 +2,6 @@ package com.me.clue.screens.Home;
 
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -13,12 +12,11 @@ import com.me.clue.model.Home;
 import com.me.clue.screens.World.WorldScreen;
 import com.me.clue.view.HomeRenderer;
 
-public class HomeScreen implements Screen, InputProcessor
+public class HomeScreen implements Screen
 {
     private Home                    _home;
-    private HomeRenderer _renderer;
-
-    private WorldScreen _worldScreen;
+    private HomeRenderer            _renderer;
+    private WorldScreen             _worldScreen;
 
     private Clue _game;
     private Stage _stage;
@@ -39,52 +37,10 @@ public class HomeScreen implements Screen, InputProcessor
         _worldScreen = new WorldScreen(_game);
     }
 
-    @Override
-    public boolean keyDown(int keycode)
+    private void changeScreen()
     {
-        return false;
-    }
-
-    @Override
-    public boolean keyUp(int keycode)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean keyTyped(char c)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean touchUp(int x, int y, int pointer, int button)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean touchDragged(int i, int i1, int i2)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean mouseMoved(int i, int i1) {
-        return false;
-    }
-
-
-    @Override
-    public boolean scrolled(int i)
-    {
-        return false;
+        _worldScreen.setSelectedPlayer(_home.getSelectedPlayers());
+        _game.setScreen(_worldScreen);
     }
 
     @Override
@@ -96,14 +52,13 @@ public class HomeScreen implements Screen, InputProcessor
         _home.update();
         _renderer.render();
 
-        if(_home.getCreateButton().isPressed() )
+        if(_home.getCreateButton().isPressed())
         {
-            if(_home.getPlayerCount() > 2)
+            if (_home.getPlayerCount() > 2)
             {
                 Gdx.app.log("Home Screen", "Create, " + _home.getPlayerCount() + " players.");
 
-                _worldScreen.setSelectedPlayer(_home.getSelectedPlayers());
-                _game.setScreen(_worldScreen);
+                changeScreen();
             }
             _home.getCreateButton().setPressed(false);
         }
@@ -146,6 +101,8 @@ public class HomeScreen implements Screen, InputProcessor
     @Override
     public void dispose()
     {
+        Gdx.app.log("Home Screen", "dispose called");
+
         Gdx.input.setInputProcessor(null);
     }
 }

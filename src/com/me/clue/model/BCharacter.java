@@ -1,10 +1,10 @@
 package com.me.clue.model;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.me.clue.Enums;
+import com.me.clue.Enums.CharacterContent;
+import com.me.clue.Enums.GridContent;
 import com.me.clue.ai.Choice;
 import com.me.clue.ai.Pathing;
 
@@ -29,7 +29,7 @@ public class BCharacter extends Actor
     protected GridComponent[][]                 _componentMatrix;
     protected GridComponent                     _currentNode;
     private GridComponent                       _drawNode;
-    private Enums.CharacterContent              _contentCode;
+    private CharacterContent                    _contentCode;
     private ArrayList<String>                   _hand = new ArrayList<String>(){};
     protected ArrayList<String>                 _knownCards = new ArrayList<String>(){};
     private ArrayList<String>                   _unknownCards = new ArrayList<String>(){};
@@ -39,8 +39,15 @@ public class BCharacter extends Actor
     //public BoardControl BoardControl { get; set; }
     //public QuestionControl QuestionControl { get; set; }
 
+    /**Properties**/
     public String getCharacter() { return _character; }
     public void setCharacter(String c) { _character = c; }
+
+    public int getMoveAmount() { return _moveAmount; }
+    public void setMoveAmount(int amount) { _moveAmount = amount; }
+
+    public CharacterContent getContentCode() {return _contentCode; }
+    public void setContentCode(CharacterContent code) { _contentCode = code; }
 
     public ArrayList<String> getHand() { return _hand; }
     public void setHand(ArrayList<String> list) { _hand = list; }
@@ -51,8 +58,12 @@ public class BCharacter extends Actor
     public ArrayList<String> getUnknownCards() { return _unknownCards; }
     public void setUnknownCards(ArrayList<String> list) { _unknownCards = list; }
 
-    public BCharacter(Game game)
+
+
+    public BCharacter(String name)
     {
+        _character = name;
+
         initialize();
     }
 
@@ -74,7 +85,7 @@ public class BCharacter extends Actor
         _componentMatrix = null;
         _currentNode = null;
         _drawNode = null;
-        _contentCode = Enums.CharacterContent.Empty;
+        _contentCode = CharacterContent.Empty;
         _hand = new ArrayList<String>() { };
         _knownCards = new ArrayList<String>() { };
         _unknownCards = new ArrayList<String>() { };
@@ -107,7 +118,7 @@ public class BCharacter extends Actor
             {
                 for(GridComponent node : n)
                 {
-                    if (node.getContentCode() == Enums.GridContent.Door && node.getLocationName().equalsIgnoreCase(_currentLocation))
+                    if (node.getContentCode() == GridContent.Door && node.getLocationName().equalsIgnoreCase(_currentLocation))
                     {
                         doors.add(node);
                     }
@@ -135,7 +146,7 @@ public class BCharacter extends Actor
             {
                 for(GridComponent node : n)
                 {
-                    if (node.getContentCode() == Enums.GridContent.Start)
+                    if (node.getContentCode() == GridContent.Start)
                     {
                         startNodes.add(node);
                     }
@@ -189,7 +200,7 @@ public class BCharacter extends Actor
         _yIndex = 0;
         _moveAmount = 0;
         _drawNode = null;
-        _contentCode = Enums.CharacterContent.Empty;
+        _contentCode = CharacterContent.Empty;
         _possiblePaths = new ArrayList<ArrayList<GridComponent>>() { };
         _currentPath = new ArrayList<GridComponent>() { };
         _validMoves = new ArrayList<GridComponent>() { };

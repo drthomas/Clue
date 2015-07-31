@@ -1,5 +1,8 @@
 package com.me.clue.screens.World;
 
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.me.clue.Enums;
 import com.me.clue.ai.Pathing;
@@ -10,47 +13,78 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
-/**
- * Created by dthomas on 7/22/2015.
- */
+
 public class WorldCreator
 {
-    private String _levelOne = "MapFiles/TestMap.txt";
+    private String _levelOneFile = "maps/TestMap.txt";
+    private String _levelOne;
+    private int _componentSize = 10;
+    private FileHandle _handle;
+
+    private int rows, cols;
 
     public WorldCreator() {}
 
-    public void CreateLevel(GridComponent[][] componentMatrix, int size)
+    public void createLevel(GridComponent[][] componentMatrix)
     {
+        _handle = Gdx.files.classpath(_levelOneFile);
+        createMatrix(componentMatrix);
+
+/*
+        if (Gdx.app.getType() == Application.ApplicationType.Android)
+        {
+
+        }
+        else
+        {
+            // ApplicationType.Desktop ..
+        }
+
+        //ReadMap(Path.get(System.getProperty("user.dir"), _levelOne).toString(), componentMatrix);
+        assignSurroundingSquares(componentMatrix);
+        assignLocationNames(componentMatrix);*/
+    }
+
+    private void createMatrix(GridComponent[][] componentMatrix)
+    {
+        char[][] lines = readMapFile(_handle);
+
+
+        for(int i = 0; i < lines.length; i++){
+            for(int j = 0; j< lines[i].length; j++){
+                System.out.print(lines[i][j]);
+            }
+            System.out.println();
+        }
+
+/*
+        componentMatrix = new GridComponent[rows][cols];
+
         int x = 0;
         int y = 0;
 
         //Add new components to the matrix
         int id = 0;
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < cols; i++)
         {
-            for (int j = 0; j < size; j++)
+            for (int j = 0; j < rows; j++)
             {
-                componentMatrix[i][j] = new GridComponent(x, y, 10, 10);
+                componentMatrix[i][j] = new GridComponent(x, y, _componentSize, _componentSize);
                 componentMatrix[i][j].setXIndex(i);
                 componentMatrix[i][j].setYIndex(j);
                 componentMatrix[i][j].setID(id);
 
                 id++;
-                x += 10;
+                x += _componentSize;
             }
-            y += 10;
+            y += _componentSize;
             x = 0;
-        }
-
-        ReadMap(Paths.get(System.getProperty("user.dir"), _levelOne).toString(), componentMatrix);
-        AssignSurroundingSquares(componentMatrix);
-        AssignLocationNames(componentMatrix);
+        }*/
     }
 
-    private void AssignSurroundingSquares(GridComponent[][] componentMatrix)
+    private void assignSurroundingSquares(GridComponent[][] componentMatrix)
     {
         int maxPossibleMoves = 4;
         Vector2[] moves = Pathing.InitMovements(maxPossibleMoves);
@@ -73,7 +107,7 @@ public class WorldCreator
         }
     }
 
-    private void AssignLocationNames(GridComponent[][] componentMatrix)
+    private void assignLocationNames(GridComponent[][] componentMatrix)
     {
         for (GridComponent[] c : componentMatrix)
         {
@@ -211,40 +245,43 @@ public class WorldCreator
         return componentMatrix[x][y].isOpen() || componentMatrix[x][y].getContentCode() == Enums.GridContent.Hero;
     }
 
-    public void ReadMap(String fileName, GridComponent[][] componentMatrix)
+    public char[][] readMapFile(FileHandle handle)
     {
-        // Read in a map file.
+        char[][] matrix;
+
         try
         {
-            new File(fileName).exists();
+            BufferedReader reader = new BufferedReader(handle.reader());
+            ArrayList<String> lines = new ArrayList<String>() { };
+            String line = reader.readLine();
+
+            while(line != null)
+            {
+                lines.add(line);
+                line = reader.readLine();
+            }
+
+            cols = lines.get(0).toCharArray().length;
+            rows = lines.size();
+
+            matrix = new char[rows][cols];
+
+            for(int i = 0; i < 42; i++)//rows
+            {
+                for(int j = 0; j < 42; j++)//columns
+                {
+                    matrix[i][j] = lines.get(i).charAt(j);
+                }
+            }
+
+
+            return matrix;
         }
-        catch (Exception e)
+        catch(IOException e)
         {
-            System.out.println("Map File Not Found: " + fileName);
+            System.out.println("File not found: " + _levelOneFile);
         }
 
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName)))
-        {
-            int lineNum = 0;
-            String line;
-            while ((line = br.readLine()) != null)
-            {
-                // Get the char array.
-                char[] parts = line.toCharArray();
-                for (int i = 0; i < parts.length; i++)
-                {
-                    componentMatrix[lineNum][i].FromChar(parts[i]);
-                }
-                lineNum++;
-            }
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        return null;
     }
 }

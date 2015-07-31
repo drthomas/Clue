@@ -27,19 +27,14 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class WorldScreen implements Screen, GestureListener
 {
-    private static final float CAMERA_WIDTH = 1280f;
-    private static final float CAMERA_HEIGHT = 720f;
+    private static final float CAMERA_WIDTH = 800f;
+    private static final float CAMERA_HEIGHT = 480f;
 
-    private World           world;
-    private WorldRenderer   renderer;
-    private WorldController controller;
-
-    private Stage _stage;
-    private Clue _game;
-    private Texture _texture;
-    private Sprite _sprite;
-    private SpriteBatch _batch;
-    private OrthographicCamera _camera;
+    private World           _world;
+    private WorldRenderer   _renderer;
+    private WorldController _controller;
+    private Stage           _stage;
+    private Clue            _game;
 
     private ArrayList<String> _selectedPlayers = new ArrayList<String>() { };
     private ArrayList<BCharacter> _playerList = new ArrayList<BCharacter>() { };
@@ -58,28 +53,9 @@ public class WorldScreen implements Screen, GestureListener
     {
         _stage = new Stage(new ExtendViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()));
 
-        world = new World();
-        renderer = new WorldRenderer(world, true);
-        controller = new WorldController(world);
-
-        loadTextures();
-
-        _camera = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
-        _camera.update();
-
-        _batch = new SpriteBatch();
-
-        _sprite = new Sprite(_texture);
-        _sprite.setOrigin(0, 0);
-        _sprite.setPosition(-_sprite.getWidth() / 2, -_sprite.getHeight() / 2);
-
-        //_stage.addActor(_sprite);
-    }
-
-    private void loadTextures()
-    {
-        _texture = new Texture(Gdx.files.internal("images/large.jpg"));
-        _texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        _world = new World();
+        _renderer = new WorldRenderer(_world, true);
+        _controller = new WorldController(_world);
     }
 
     @Override
@@ -87,6 +63,11 @@ public class WorldScreen implements Screen, GestureListener
     {
         Gdx.app.log("World Screen", "show called");
         Gdx.input.setInputProcessor(new GestureDetector(this));
+
+        _world.setSelectedPlayers(_selectedPlayers);
+
+
+        _world.start();
     }
 
     @Override
@@ -95,13 +76,10 @@ public class WorldScreen implements Screen, GestureListener
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
-        _batch.setProjectionMatrix(_camera.combined);
-        _batch.begin();
-        _sprite.draw(_batch);
-        _batch.end();
+        _renderer.render();
 
-        controller.update(delta);
-        renderer.render();
+        _controller.update(delta);
+        _renderer.render();
     }
 
     @Override
@@ -165,13 +143,19 @@ public class WorldScreen implements Screen, GestureListener
     {
         Gdx.app.log("World Screen:", "pan Called");
 
+        _renderer.getCamera().translate(-deltaX, deltaY);
 
-        _camera.translate(-deltaX, deltaY);
-        _camera.position.x = MathUtils.clamp(_camera.position.x, -(_sprite.getWidth() - Gdx.graphics.getWidth()) / 2,
-                (_sprite.getWidth() - Gdx.graphics.getWidth()) / 2);
-        _camera.position.y = MathUtils.clamp(_camera.position.y, -(_sprite.getHeight() - Gdx.graphics.getHeight()) / 2,
-                (_sprite.getHeight() - Gdx.graphics.getHeight()) / 2);
-        _camera.update();
+        _renderer.getCamera().position.x =
+                MathUtils.clamp(_renderer.getCamera().position.x,
+                -(_renderer.getSprite().getWidth() - Gdx.graphics.getWidth()) / 2,
+                (_renderer.getSprite().getWidth() - Gdx.graphics.getWidth()) / 2);
+
+        _renderer.getCamera().position.y =
+                MathUtils.clamp(_renderer.getCamera().position.y,
+                -(_renderer.getSprite().getHeight() - Gdx.graphics.getHeight()) / 2,
+                (_renderer.getSprite().getHeight() - Gdx.graphics.getHeight()) / 2);
+
+        _renderer.getCamera().update();
 
         return false;
     }
