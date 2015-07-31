@@ -28,6 +28,7 @@ public class CustomButton
     public boolean isPressed() { return _pressed; }
     public void setPressed(boolean pressed) { _pressed = pressed;}
     public TextButton getButton(){return _button; }
+    public void setPosition(float x, float y){ _button.setPosition(x, y);}
 
     public CustomButton(Vector2 position)
     {

@@ -19,48 +19,32 @@ import java.util.ArrayList;
 public class WorldCreator
 {
     private String _levelOneFile = "maps/TestMap.txt";
-    private String _levelOne;
     private int _componentSize = 10;
     private FileHandle _handle;
+    private char[][] _lines;
+    private GridComponent[][] _componentMatrix;
 
     private int rows, cols;
 
     public WorldCreator() {}
 
-    public void createLevel(GridComponent[][] componentMatrix)
+    public GridComponent[][] createLevel(GridComponent[][] componentMatrix)
     {
+        _componentMatrix = componentMatrix;
         _handle = Gdx.files.classpath(_levelOneFile);
-        createMatrix(componentMatrix);
 
-/*
-        if (Gdx.app.getType() == Application.ApplicationType.Android)
-        {
+        _lines = readMapFile(_handle);
 
-        }
-        else
-        {
-            // ApplicationType.Desktop ..
-        }
+        createMatrix();
+        assignSurroundingSquares();
+        assignLocationNames();
 
-        //ReadMap(Path.get(System.getProperty("user.dir"), _levelOne).toString(), componentMatrix);
-        assignSurroundingSquares(componentMatrix);
-        assignLocationNames(componentMatrix);*/
+        return _componentMatrix;
     }
 
-    private void createMatrix(GridComponent[][] componentMatrix)
+    private void createMatrix()
     {
-        char[][] lines = readMapFile(_handle);
-
-
-        for(int i = 0; i < lines.length; i++){
-            for(int j = 0; j< lines[i].length; j++){
-                System.out.print(lines[i][j]);
-            }
-            System.out.println();
-        }
-
-/*
-        componentMatrix = new GridComponent[rows][cols];
+        _componentMatrix = new GridComponent[rows][cols];
 
         int x = 0;
         int y = 0;
@@ -71,25 +55,27 @@ public class WorldCreator
         {
             for (int j = 0; j < rows; j++)
             {
-                componentMatrix[i][j] = new GridComponent(x, y, _componentSize, _componentSize);
-                componentMatrix[i][j].setXIndex(i);
-                componentMatrix[i][j].setYIndex(j);
-                componentMatrix[i][j].setID(id);
+                _componentMatrix[i][j] = new GridComponent(x, y, _componentSize, _componentSize);
+                _componentMatrix[i][j].setXIndex(i);
+                _componentMatrix[i][j].setYIndex(j);
+                _componentMatrix[i][j].setID(id);
+
+                _componentMatrix[i][j].fromChar(_lines[i][j]);
 
                 id++;
                 x += _componentSize;
             }
             y += _componentSize;
             x = 0;
-        }*/
+        }
     }
 
-    private void assignSurroundingSquares(GridComponent[][] componentMatrix)
+    private void assignSurroundingSquares()
     {
         int maxPossibleMoves = 4;
         Vector2[] moves = Pathing.InitMovements(maxPossibleMoves);
 
-        for (GridComponent[] c : componentMatrix)
+        for (GridComponent[] c : _componentMatrix)
         {
             for(GridComponent component : c)
             {
@@ -98,7 +84,7 @@ public class WorldCreator
                     GridComponent tempSquare;
                     if (Pathing.ValidCoordinates((int)(component.getXIndex() + moves[i].x), (int)(component.getYIndex() + moves[i].y), 42))
                     {
-                        tempSquare = componentMatrix[(int)(component.getXIndex() + moves[i].x)][(int)(component.getYIndex() + moves[i].y)];
+                        tempSquare = _componentMatrix[(int)(component.getXIndex() + moves[i].x)][(int)(component.getYIndex() + moves[i].y)];
                         tempSquare.setMoveAmount(component.getMoveAmount() + 1);
                         component.getSurroundingNodes().add(tempSquare);
                     }
@@ -107,9 +93,9 @@ public class WorldCreator
         }
     }
 
-    private void assignLocationNames(GridComponent[][] componentMatrix)
+    private void assignLocationNames()
     {
-        for (GridComponent[] c : componentMatrix)
+        for (GridComponent[] c : _componentMatrix)
         {
             for(GridComponent component : c)
             {
@@ -149,7 +135,7 @@ public class WorldCreator
                             break;
                     }
 
-                    for (GridComponent roomComponent : GetRoom(component))
+                    for (GridComponent roomComponent : getRoom(component))
                     {
                         if (roomComponent.getContentCode() == Enums.GridContent.Room)
                         {
@@ -181,7 +167,7 @@ public class WorldCreator
         }
     }
 
-    public ArrayList<GridComponent> GetRoom(GridComponent door)
+    public ArrayList<GridComponent> getRoom(GridComponent door)
     {
         ArrayList<GridComponent> currentOpenSquares = new ArrayList<GridComponent>() { };
         ArrayList<GridComponent> nextOpenMoves = new ArrayList<GridComponent>() { };
@@ -223,14 +209,15 @@ public class WorldCreator
         return room;
     }
 
-    public Vector2 FindCode(GridComponent[][] componentMatrix, Enums.GridContent content)
+    public Vector2 findCode(GridComponent[][] componentMatrix, Enums.GridContent content)
     {
         Vector2 p = new Vector2();
         for(GridComponent[] c : componentMatrix)
         {
             for(GridComponent component : c)
             {
-                if (component.getContentCode() == Enums.GridContent.Hero || component.getContentCode() == Enums.GridContent.Monster)
+                if (component.getContentCode() == Enums.GridContent.Hero ||
+                        component.getContentCode() == Enums.GridContent.Monster)
                 {
                     p.x = component.getXIndex();
                     p.y = component.getYIndex();
@@ -240,9 +227,10 @@ public class WorldCreator
         return p;
     }
 
-    public boolean SquareOpen(GridComponent[][] componentMatrix, int x, int y)
+    public boolean squareOpen(GridComponent[][] componentMatrix, int x, int y)
     {
-        return componentMatrix[x][y].isOpen() || componentMatrix[x][y].getContentCode() == Enums.GridContent.Hero;
+        return componentMatrix[x][y].isOpen() ||
+                componentMatrix[x][y].getContentCode() == Enums.GridContent.Hero;
     }
 
     public char[][] readMapFile(FileHandle handle)
@@ -261,16 +249,29 @@ public class WorldCreator
                 line = reader.readLine();
             }
 
-            cols = lines.get(0).toCharArray().length;
+            cols = lines.get(1).toCharArray().length;
             rows = lines.size();
 
             matrix = new char[rows][cols];
 
-            for(int i = 0; i < 42; i++)//rows
+
+
+            for(int i = 1; i < rows; i++)//rows
             {
-                for(int j = 0; j < 42; j++)//columns
+                for(int j = 0; j < cols; j++)//columns
                 {
-                    matrix[i][j] = lines.get(i).charAt(j);
+                    if(i == 0)
+                    {
+                        //The first few characters in the first line
+                        //  are strange characters.  This ignores the file's
+                        //  first line and inputs a default wall
+
+                        matrix[i][j] = 'w';
+                    }
+                    else
+                    {
+                        matrix[i][j] = Character.toLowerCase(lines.get(i).charAt(j));
+                    }
                 }
             }
 

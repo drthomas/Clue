@@ -2,21 +2,17 @@ package com.me.clue.screens.World;
 
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.input.GestureDetector.GestureListener;
-
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+
 import com.me.clue.Clue;
 import com.me.clue.controller.WorldController;
 import com.me.clue.model.BCharacter;
+import com.me.clue.model.SelectedCharacter;
 import com.me.clue.model.World;
 import com.me.clue.view.WorldRenderer;
 
@@ -36,10 +32,10 @@ public class WorldScreen implements Screen, GestureListener
     private Stage           _stage;
     private Clue            _game;
 
-    private ArrayList<String> _selectedPlayers = new ArrayList<String>() { };
+    private ArrayList<SelectedCharacter> _selectedPlayers = new  ArrayList<SelectedCharacter>() { };
     private ArrayList<BCharacter> _playerList = new ArrayList<BCharacter>() { };
 
-    public void setSelectedPlayer(ArrayList<String> list) { _selectedPlayers = list; }
+    public void setSelectedPlayer( ArrayList<SelectedCharacter> list) { _selectedPlayers = list; }
 
     public WorldScreen(Clue game)
     {
@@ -53,7 +49,7 @@ public class WorldScreen implements Screen, GestureListener
     {
         _stage = new Stage(new ExtendViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()));
 
-        _world = new World();
+        _world = new World(_stage);
         _renderer = new WorldRenderer(_world, true);
         _controller = new WorldController(_world);
     }
@@ -75,8 +71,6 @@ public class WorldScreen implements Screen, GestureListener
     {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-
-        _renderer.render();
 
         _controller.update(delta);
         _renderer.render();
@@ -156,6 +150,8 @@ public class WorldScreen implements Screen, GestureListener
                 (_renderer.getSprite().getHeight() - Gdx.graphics.getHeight()) / 2);
 
         _renderer.getCamera().update();
+
+        _world.update(x, y, deltaX, deltaY);
 
         return false;
     }

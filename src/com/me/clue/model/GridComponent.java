@@ -13,14 +13,10 @@ import java.util.ArrayList;
 
 public class GridComponent
 {
-    private static final float CAMERA_WIDTH = 10f;
-    private static final float CAMERA_HEIGHT = 7f;
-
-
     private Rectangle                   _rectangle;
     private Vector2                     _position;
-    private float                         _xIndex;
-    private float                         _yIndex;
+    private float                       _xIndex;
+    private float                       _yIndex;
     private int                         _width;
     private int                         _height;
     private int                         _moveAmount = 0;
@@ -32,16 +28,14 @@ public class GridComponent
     private boolean                     _shade = false;
     private Color                       _fillColor = Color.BLACK;
     private Enums.GridContent           _contentCode = Enums.GridContent.Empty;
-    private float                         _fScore = 0;
-    private float                         _hScore = 0;
-    private float                         _gScore = 0;
+    private float                       _fScore = 0;
+    private float                       _hScore = 0;
+    private float                       _gScore = 0;
     private int                         _id = 0;
     private GridComponent               _parentNode;
     private ArrayList<GridComponent>    _surroundingNodes = new ArrayList<GridComponent>() { };
 
-    ShapeRenderer debugRenderer = new ShapeRenderer();
-    private OrthographicCamera cam;
-
+    /**Properties**/
     public Rectangle getRectangle() { return _rectangle; }
     public void setRectangle(Rectangle rect) { _rectangle = rect; }
 
@@ -107,9 +101,7 @@ public class GridComponent
 
     public GridComponent()
     {
-        this.cam = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
-        _position.x = 0;
-        _position.y = 0;
+        _position = new Vector2(0, 0);
         _width = 0;
         _height = 0;
         _rectangle = new Rectangle();
@@ -117,9 +109,7 @@ public class GridComponent
 
     public GridComponent(int x, int y, int width, int height)
     {
-        this.cam = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
-        _position.x = x;
-        _position.y = y;
+        _position = new Vector2(x, y);
         _width = width;
         _height = height;
         _rectangle = new Rectangle(_position.x, _position.y, _width, _height);
@@ -127,7 +117,6 @@ public class GridComponent
 
     public GridComponent(GridComponent component)
     {
-        this.cam = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
         _position = component.getPosition();
         _xIndex = component.getXIndex();
         _yIndex = component.getYIndex();
@@ -142,7 +131,6 @@ public class GridComponent
 
     public GridComponent(Rectangle rect)
     {
-        this.cam = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
         _rectangle = new Rectangle();
         _rectangle.setX(rect.getX());
         _rectangle.setWidth(rect.getWidth());
@@ -157,7 +145,7 @@ public class GridComponent
         _gScore = 0;
     }
 
-    public void FromChar(char charIn)
+    public void fromChar(char charIn)
     {
         // Use a switch statement to parse characters.
         switch (Character.toLowerCase(charIn))
@@ -203,64 +191,30 @@ public class GridComponent
 
     public void Draw()
     {
-        if (_isPath)
-        {
-            _fillColor = Color.CYAN;
-        }
 
-        debugRenderer.setProjectionMatrix(cam.combined);
-        debugRenderer.begin(ShapeRenderer.ShapeType.Line);
-
-        debugRenderer.setColor(_fillColor);
-        debugRenderer.rect(_position.x, _position.y, _width, _height);
     }
     public void DrawDoor()
     {
-        debugRenderer.setProjectionMatrix(cam.combined);
-        debugRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-        debugRenderer.setColor(Color.GRAY);
-        debugRenderer.rect(_position.x, _position.y, _width, _height);
     }
     public void DrawGrid()
     {
 
-        debugRenderer.setProjectionMatrix(cam.combined);
-        debugRenderer.begin(ShapeRenderer.ShapeType.Line);
-
-        debugRenderer.setColor(Color.WHITE);
-        debugRenderer.rect(_position.x, _position.y, _width, _height);
     }
     public void DrawMonster()
     {
-        debugRenderer.setProjectionMatrix(cam.combined);
-        debugRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-        debugRenderer.setColor(Color.GREEN);
-        debugRenderer.rect(_position.x, _position.y, _width, _height);
     }
     public void DrawRoom()
     {
-        debugRenderer.setProjectionMatrix(cam.combined);
-        debugRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-        debugRenderer.setColor(Color.GRAY);
-        debugRenderer.rect(_position.x, _position.y, _width, _height);
     }
     public void DrawStart()
     {
-        debugRenderer.setProjectionMatrix(cam.combined);
-        debugRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-        debugRenderer.setColor(Color.GRAY);
-        debugRenderer.rect(_position.x, _position.y, _width, _height);
     }
     public void DrawWall()
     {
-        debugRenderer.setProjectionMatrix(cam.combined);
-        debugRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-        debugRenderer.setColor(Color.BLUE);
-        debugRenderer.rect(_position.x, _position.y, _width, _height);
     }
 }

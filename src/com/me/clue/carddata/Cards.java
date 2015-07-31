@@ -82,7 +82,7 @@ public class Cards
         _solution.add(solutionWeapon);
     }
 
-    public void Deal(ArrayList<BCharacter> players)
+    public void deal(ArrayList<BCharacter> players)
     {
         int handSize = _deck.size() / players.size();
 
@@ -116,16 +116,12 @@ public class Cards
 
             for (String card : player.getKnownCards())
             {
-                try
-                {
-                    player.getUnknownCards().remove(card);
-                }
-                catch (Exception e) { }
+                player.getUnknownCards().remove(card);
             }
         }
     }
 
-    public void Shuffle()
+    public void shuffle()
     {
         Random rnd = new Random();
         int n = _deck.size();

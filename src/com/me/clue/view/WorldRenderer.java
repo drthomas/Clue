@@ -83,6 +83,8 @@ public class WorldRenderer
         _sprite.draw(_batch);
         _batch.end();
 
+        _world.draw();
+
         if (_debug)
             drawDebug();
     }

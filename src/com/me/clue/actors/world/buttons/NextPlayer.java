@@ -1,4 +1,4 @@
-package com.me.clue.actors.homeActors;
+package com.me.clue.actors.world.buttons;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -10,10 +10,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.me.clue.custom.CustomButton;
 
-
-public class CreateButton extends CustomButton
+public class NextPlayer extends CustomButton
 {
-    public CreateButton(Vector2 position)
+    public NextPlayer(Vector2 position)
     {
         super(position);
 
@@ -23,7 +22,7 @@ public class CreateButton extends CustomButton
         {
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button)
             {
-                Gdx.app.log("Create Button", "Pressed");
+                Gdx.app.log("NextPlayer Button", "Pressed");
                 _pressed = true;
                 setClickState(ClickState.PRESSED);
                 return true;
@@ -31,7 +30,7 @@ public class CreateButton extends CustomButton
 
             public void touchUp(InputEvent event, float x, float y, int pointer, int button)
             {
-                Gdx.app.log("Create Button", "Released");
+                Gdx.app.log("NextPlayer Button", "Released");
                 setClickState(ClickState.RELEASED);
             }
         });
@@ -48,7 +47,7 @@ public class CreateButton extends CustomButton
         _textButtonStyle.up = _skin.getDrawable("createButtonReleased");
         _textButtonStyle.down = _skin.getDrawable("createButtonPressed");
 
-        _button = new TextButton("Create", _textButtonStyle);
+        _button = new TextButton("Next", _textButtonStyle);
 
         _button.setOrigin(0, 0);
         _button.setPosition(_position.x, _position.y);
