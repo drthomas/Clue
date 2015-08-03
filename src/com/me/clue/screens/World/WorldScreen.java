@@ -1,11 +1,20 @@
 package com.me.clue.screens.World;
 
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
@@ -21,8 +30,9 @@ import java.util.ArrayList;
 import javax.microedition.khronos.opengles.GL10;
 
 
-public class WorldScreen implements Screen, GestureListener
+public class WorldScreen implements Screen, GestureListener, InputProcessor
 {
+
     private World           _world;
     private WorldRenderer   _renderer;
     private WorldController _controller;
@@ -56,8 +66,13 @@ public class WorldScreen implements Screen, GestureListener
     public void show()
     {
         Gdx.app.log("World Screen", "show called");
-        Gdx.input.setInputProcessor(new GestureDetector(this));
-       //Gdx.input.setInputProcessor(_stage);
+
+        InputMultiplexer im = new InputMultiplexer();
+        GestureDetector gd = new GestureDetector(this);
+        im.addProcessor(gd);
+        im.addProcessor(this);
+
+       Gdx.input.setInputProcessor(im);
 
         _world.setSelectedPlayers(_selectedPlayers);
 
@@ -68,10 +83,11 @@ public class WorldScreen implements Screen, GestureListener
     @Override
     public void render(float delta)
     {
-        Gdx.gl.glClearColor(1, 1, 1, 1);
+        Gdx.gl.glClearColor(1, 0, 0, 1);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
-        _controller.update(delta);
+        _controller.update(_renderer.getCamera());
         _renderer.render();
     }
 
@@ -104,77 +120,170 @@ public class WorldScreen implements Screen, GestureListener
         Gdx.input.setInputProcessor(null);
     }
 
-   @Override
-    public boolean touchDown(float v, float v1, int i, int i1)
+    @Override
+    public boolean touchDown(float screenX, float screenY, int pointer, int button)
     {
-        return false;
+        Gdx.app.log("World Screen", "GestureListener touchDown called, finger: " + Integer.toString(button));
+
+        //Vector3 clickCoordinates = new Vector3(screenX, screenY, 0);
+        //Vector3 position = _renderer.getCamera().unproject(clickCoordinates);
+        //_world.getSprite().setPosition(position.x, position.y);
+
+        return true;
     }
 
     @Override
-    public boolean tap(float v, float v1, int i, int i1)
+    public boolean tap(float x, float y, int count, int button)
     {
-        Gdx.app.log("World Screen:", "tap Called");
-        return false;
+        Gdx.app.log("World Screen", "GestureListener tap called");
+        return true;
     }
 
     @Override
-    public boolean longPress(float v, float v1)
+    public boolean longPress(float x, float y)
     {
-        Gdx.app.log("World Screen:", "longPress Called");
-        return false;
+        Gdx.app.log("World Screen", "GestureListener longPress called");
+        return true;
     }
 
     @Override
-    public boolean fling(float v, float v1, int i)
+    public boolean fling(float velocityX, float velocityY, int button)
     {
-        Gdx.app.log("World Screen:", "fling Called");
-        return false;
+        Gdx.app.log("World Screen", "GestureListener fling called, velocity: " + Float.toString(velocityX) +
+                ", " + Float.toString(velocityY));
+        return true;
     }
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY)
     {
-        Gdx.app.log("World Screen", "pan Called");
+        Gdx.app.log("World Screen", "GestureListener pan called, delta: " + Float.toString(deltaX) +
+                ", " + Float.toString(deltaY));
+
+        Vector3 touchPos = new Vector3(x, y, 0);//Position the screen is touched
+
+        _renderer.getCamera().unproject(touchPos);
 
         _renderer.getCamera().translate(-deltaX, deltaY);
 
-        _renderer.getCamera().position.x =
-                MathUtils.clamp(_renderer.getCamera().position.x,
-                -(_world.getImage().getWidth() - Gdx.graphics.getWidth()) / 2,
-                (_world.getImage().getWidth() - Gdx.graphics.getWidth()) / 2);
+        //_world.getSprite().setPosition(touchPos.x - _world.getSprite().getWidth() / 2,
+        //        touchPos.y - _world.getSprite().getHeight() / 2);
 
-        _renderer.getCamera().position.y =
-                MathUtils.clamp(_renderer.getCamera().position.y,
-                -(_world.getImage().getHeight() - Gdx.graphics.getHeight()) / 2,
-                (_world.getImage().getHeight() - Gdx.graphics.getHeight()) / 2);
-
-        _renderer.getCamera().update();
-
-        _world.update(x, y, deltaX, deltaY);
-
-        Gdx.app.log("World Screen", "" + _renderer.getCamera().position.x);
-
-        return false;
+        return true;
     }
 
     @Override
     public boolean panStop(float v, float v1, int i, int i1)
     {
-        Gdx.app.log("World Screen:", "panStop Called");
+        Gdx.app.log("World Screen", "GestureListener panStop called");
+        return true;
+    }
+
+    @Override
+    public boolean zoom(float initialDistance, float distance)
+    {
+        Gdx.app.log("World Screen", "GestureListener zoom called, initial distance: " + Float.toString(initialDistance) +
+            " Distance: " + Float.toString(distance));
+        return true;
+    }
+
+    @Override
+    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2,
+                         Vector2 pointer1, Vector2 pointer2)
+    {
+        Gdx.app.log("World Screen", "GestureListener pinch called");
+        return true;
+    }
+
+    @Override
+    public boolean keyDown(int keycode)
+    {
+        Gdx.app.log("World Screen", "InputProcessor keyDown called: " + keycode);
+
+        if (keycode == Input.Keys.LEFT)
+            _controller.leftPressed();
+        if (keycode == Input.Keys.RIGHT)
+            _controller.rightPressed();
+        if (keycode == Input.Keys.UP)
+            _controller.upPressed();
+        if (keycode == Input.Keys.DOWN)
+            _controller.downPressed();
+        if (keycode == Input.Keys.Z)
+            _controller.jumpPressed();
+        if (keycode == Input.Keys.X)
+            _controller.firePressed();
+        if (keycode == Input.Keys.NUM_1)
+            _controller.h01Pressed();
+        if (keycode == Input.Keys.NUM_2)
+            _controller.h02Pressed();
+
+        return true;
+    }
+
+    @Override
+    public boolean keyUp(int keycode)
+    {
+        Gdx.app.log("World Screen", "InputProcessor keyUp called: " + keycode);
+
+        if (keycode == Input.Keys.LEFT)
+            _controller.leftReleased();
+        if (keycode == Input.Keys.RIGHT)
+            _controller.rightReleased();
+        if (keycode == Input.Keys.UP)
+            _controller.upReleased();
+        if (keycode == Input.Keys.DOWN)
+            _controller.downReleased();
+        if (keycode == Input.Keys.Z)
+            _controller.jumpReleased();
+        if (keycode == Input.Keys.X)
+            _controller.fireReleased();
+        if (keycode == Input.Keys.NUM_1)
+            _controller.h01Released();
+        if (keycode == Input.Keys.NUM_2)
+            _controller.h02Released();
+
+        return true;
+    }
+
+    @Override
+    public boolean keyTyped(char character)
+    {
+        Gdx.app.log("World Screen", "InputProcessor keyTyped called");
+        return true;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button)
+    {
+        Gdx.app.log("World Screen", "InputProcessor touchDown called");
+        return true;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button)
+    {
+        Gdx.app.log("World Screen", "InputProcessor touchUp called");
         return false;
     }
 
     @Override
-    public boolean zoom(float v, float v1)
+    public boolean touchDragged(int screenX, int screenY, int pointer)
     {
-        Gdx.app.log("World Screen:", "zoom Called");
+        Gdx.app.log("World Screen", "InputProcessor touchDragged called");
         return false;
     }
 
     @Override
-    public boolean pinch(Vector2 vector2, Vector2 vector21, Vector2 vector22, Vector2 vector23)
+    public boolean mouseMoved(int screenX, int screenY)
     {
-        Gdx.app.log("World Screen:", "pinch Called");
+        Gdx.app.log("World Screen", "InputProcessor mouseMoved called");
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount)
+    {
+        Gdx.app.log("World Screen", "InputProcessor scrolled called");
         return false;
     }
 }
