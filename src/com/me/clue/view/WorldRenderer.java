@@ -11,6 +11,9 @@ import com.me.clue.Clue;
 import com.me.clue.controller.WorldController;
 import com.me.clue.model.World;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 
 public class WorldRenderer
 {
@@ -19,13 +22,8 @@ public class WorldRenderer
 
     private World               _world;
 
-    /** for debug rendering **/
     ShapeRenderer debugRenderer = new ShapeRenderer();
 
-    /** Textures **/
-
-    private Stage               _stage;
-    private Clue                _game;
     private Texture             _texture;
     private Sprite              _sprite;
     private SpriteBatch         _batch;
@@ -58,31 +56,13 @@ public class WorldRenderer
 
     private void initialize()
     {
-        loadTextures();
-
         _camera = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
         _camera.position.set(CAMERA_WIDTH / 2f, CAMERA_HEIGHT / 2f, 0);
         _camera.update();
-
-        _batch = new SpriteBatch();
-
-        _sprite = new Sprite(_texture);
-        _sprite.setOrigin(0, 0);
-        _sprite.setPosition(-_sprite.getWidth() / 2, -_sprite.getHeight() / 2);    }
-
-    private void loadTextures()
-    {
-        _texture = new Texture(Gdx.files.internal("images/large.jpg"));
-        _texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
     }
 
     public void render()
     {
-        _batch.setProjectionMatrix(_camera.combined);
-        _batch.begin();
-        _sprite.draw(_batch);
-        _batch.end();
-
         _world.draw();
 
         if (_debug)

@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 public class WorldCreator
 {
-    private String _levelOneFile = "maps/TestMap.txt";
+    private String _levelOneFile = "data/maps/TestMap.txt";
     private int _componentSize = 10;
     private FileHandle _handle;
     private char[][] _lines;
@@ -31,7 +31,7 @@ public class WorldCreator
     public GridComponent[][] createLevel(GridComponent[][] componentMatrix)
     {
         _componentMatrix = componentMatrix;
-        _handle = Gdx.files.classpath(_levelOneFile);
+        _handle = Gdx.files.internal(_levelOneFile);
 
         _lines = readMapFile(_handle);
 
@@ -209,7 +209,7 @@ public class WorldCreator
         return room;
     }
 
-    public Vector2 findCode(GridComponent[][] componentMatrix, Enums.GridContent content)
+    public Vector2 findCode(GridComponent[][] componentMatrix)
     {
         Vector2 p = new Vector2();
         for(GridComponent[] c : componentMatrix)
@@ -237,51 +237,47 @@ public class WorldCreator
     {
         char[][] matrix;
 
-        try
-        {
-            BufferedReader reader = new BufferedReader(handle.reader());
-            ArrayList<String> lines = new ArrayList<String>() { };
-            String line = reader.readLine();
+            try {
+                BufferedReader reader = new BufferedReader(handle.reader());
+                ArrayList<String> lines = new ArrayList<>();
+                String line = reader.readLine();
 
-            while(line != null)
-            {
-                lines.add(line);
-                line = reader.readLine();
-            }
-
-            cols = lines.get(1).toCharArray().length;
-            rows = lines.size();
-
-            matrix = new char[rows][cols];
-
-
-
-            for(int i = 1; i < rows; i++)//rows
-            {
-                for(int j = 0; j < cols; j++)//columns
+                while (line != null)
                 {
-                    if(i == 0)
-                    {
-                        //The first few characters in the first line
-                        //  are strange characters.  This ignores the file's
-                        //  first line and inputs a default wall
+                    lines.add(line);
+                    line = reader.readLine();
+                }
 
-                        matrix[i][j] = 'w';
-                    }
-                    else
+                cols = lines.get(1).toCharArray().length;
+                rows = lines.size();
+
+                matrix = new char[rows][cols];
+
+
+                for (int i = 1; i < rows; i++)//rows
+                {
+                    for (int j = 0; j < cols; j++)//columns
                     {
-                        matrix[i][j] = Character.toLowerCase(lines.get(i).charAt(j));
+                        if (i == 0) {
+                            //The first few characters in the first line
+                            //  are strange characters.  This ignores the file's
+                            //  first line and inputs a default wall
+
+                            matrix[i][j] = 'w';
+                        } else {
+                            matrix[i][j] = Character.toLowerCase(lines.get(i).charAt(j));
+                        }
                     }
                 }
+
+
+                return matrix;
+            }
+            catch (IOException e)
+            {
+                Gdx.app.log("World Creator: ", "File not found: " + _levelOneFile);
             }
 
-
-            return matrix;
-        }
-        catch(IOException e)
-        {
-            System.out.println("File not found: " + _levelOneFile);
-        }
 
         return null;
     }

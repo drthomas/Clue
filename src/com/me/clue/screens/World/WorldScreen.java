@@ -23,12 +23,10 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class WorldScreen implements Screen, GestureListener
 {
-    private static final float CAMERA_WIDTH = 800f;
-    private static final float CAMERA_HEIGHT = 480f;
-
     private World           _world;
     private WorldRenderer   _renderer;
     private WorldController _controller;
+
     private Stage           _stage;
     private Clue            _game;
 
@@ -59,6 +57,7 @@ public class WorldScreen implements Screen, GestureListener
     {
         Gdx.app.log("World Screen", "show called");
         Gdx.input.setInputProcessor(new GestureDetector(this));
+       //Gdx.input.setInputProcessor(_stage);
 
         _world.setSelectedPlayers(_selectedPlayers);
 
@@ -105,7 +104,7 @@ public class WorldScreen implements Screen, GestureListener
         Gdx.input.setInputProcessor(null);
     }
 
-    @Override
+   @Override
     public boolean touchDown(float v, float v1, int i, int i1)
     {
         return false;
@@ -135,23 +134,25 @@ public class WorldScreen implements Screen, GestureListener
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY)
     {
-        Gdx.app.log("World Screen:", "pan Called");
+        Gdx.app.log("World Screen", "pan Called");
 
         _renderer.getCamera().translate(-deltaX, deltaY);
 
         _renderer.getCamera().position.x =
                 MathUtils.clamp(_renderer.getCamera().position.x,
-                -(_renderer.getSprite().getWidth() - Gdx.graphics.getWidth()) / 2,
-                (_renderer.getSprite().getWidth() - Gdx.graphics.getWidth()) / 2);
+                -(_world.getImage().getWidth() - Gdx.graphics.getWidth()) / 2,
+                (_world.getImage().getWidth() - Gdx.graphics.getWidth()) / 2);
 
         _renderer.getCamera().position.y =
                 MathUtils.clamp(_renderer.getCamera().position.y,
-                -(_renderer.getSprite().getHeight() - Gdx.graphics.getHeight()) / 2,
-                (_renderer.getSprite().getHeight() - Gdx.graphics.getHeight()) / 2);
+                -(_world.getImage().getHeight() - Gdx.graphics.getHeight()) / 2,
+                (_world.getImage().getHeight() - Gdx.graphics.getHeight()) / 2);
 
         _renderer.getCamera().update();
 
         _world.update(x, y, deltaX, deltaY);
+
+        Gdx.app.log("World Screen", "" + _renderer.getCamera().position.x);
 
         return false;
     }

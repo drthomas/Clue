@@ -1,7 +1,11 @@
 package com.me.clue.model;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.me.clue.Enums;
 import com.me.clue.actors.world.buttons.NextPlayer;
 import com.me.clue.carddata.Cards;
@@ -24,11 +28,15 @@ public class World
     private NextPlayer _btnNextPlayer;
 
     private Stage _stage;
+    private Texture _texture;
+    private TextureRegion _region;
+    private Image _image;
 
     /**Properties**/
     public WorldCreator getWorldCreator() { return _worldCreator; }
 
     public void setSelectedPlayers(ArrayList<SelectedCharacter> list) { _selectedPlayers = list; }
+    public Image getImage() { return _image;}
 
     public World(Stage stage)
     {
@@ -39,6 +47,7 @@ public class World
     {
         _componentMatrix = _worldCreator.createLevel(_componentMatrix);
 
+        loadTextures();
         createPlayers();
         dealCards();
         createActors();
@@ -55,6 +64,26 @@ public class World
         //Move the current player to the end of the player list
         _playerList.remove(_currentPlayer);
         _playerList.add(_currentPlayer);
+    }
+
+    private void loadTextures()
+    {
+        try
+        {
+            _texture = new Texture(Gdx.files.internal("images/large.jpg"));
+            _texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        }
+        catch(Exception e)
+        {
+            Gdx.app.log("World Renderer: ", "File not found");
+        }
+        finally
+        {
+            _region = new TextureRegion(_texture);
+            _image = new Image(_region);
+            _image.setOrigin(0, 0);
+            _image.setPosition(-_image.getWidth() / 2, -_image.getHeight() / 2);
+        }
     }
 
     private void createPlayers()
@@ -115,7 +144,9 @@ public class World
 
     private void createStage()
     {
+        _stage.addActor(_image);
         _stage.addActor(_btnNextPlayer.getButton());
+
     }
 
 
@@ -126,6 +157,6 @@ public class World
 
     public void update(float x, float y, float deltaX, float deltaY)
     {
-
+        _image.setPosition(x, -y);
     }
 }
