@@ -19,7 +19,8 @@ import java.util.ArrayList;
 public class WorldCreator
 {
     private String _levelOneFile = "data/maps/TestMap.txt";
-    private int _componentSize = 10;
+    private int _componentSizeX = 64;
+    private int _componentSizeY = 64;
     private FileHandle _handle;
     private char[][] _lines;
     private GridComponent[][] _componentMatrix;
@@ -55,7 +56,7 @@ public class WorldCreator
         {
             for (int j = 0; j < rows; j++)
             {
-                _componentMatrix[i][j] = new GridComponent(x, y, _componentSize, _componentSize);
+                _componentMatrix[i][j] = new GridComponent(x, y, _componentSizeX, _componentSizeY);
                 _componentMatrix[i][j].setXIndex(i);
                 _componentMatrix[i][j].setYIndex(j);
                 _componentMatrix[i][j].setID(id);
@@ -63,9 +64,9 @@ public class WorldCreator
                 _componentMatrix[i][j].fromChar(_lines[i][j]);
 
                 id++;
-                x += _componentSize;
+                x += _componentSizeX;
             }
-            y += _componentSize;
+            y += _componentSizeY;
             x = 0;
         }
     }

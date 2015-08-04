@@ -1,8 +1,15 @@
 package com.me.clue.model;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -32,15 +39,34 @@ public class World
     private TextureRegion _region;
     private Image _image;
 
+
+    private TiledMap _tiledMap;
+    private TiledMapRenderer _tiledMapRenderer;
+
+    SpriteBatch sb;
+    Texture texture;
+    Sprite sprite;
+
     /**Properties**/
+    public GridComponent[][] getComponentMatrix() { return _componentMatrix; }
     public WorldCreator getWorldCreator() { return _worldCreator; }
 
     public void setSelectedPlayers(ArrayList<SelectedCharacter> list) { _selectedPlayers = list; }
     public Image getImage() { return _image;}
 
+    public TiledMap getTiledMap() { return _tiledMap; }
+    public Sprite getSprite() { return sprite; }
+
     public World(Stage stage)
     {
         _stage = stage;
+
+        _tiledMap = new TmxMapLoader().load("images/ClueTileSheet.tmx");
+        _tiledMapRenderer = new OrthogonalTiledMapRenderer(_tiledMap);
+
+        sb = new SpriteBatch();
+        texture = new Texture(Gdx.files.internal("pik.png"));
+        sprite = new Sprite(texture);
     }
 
     public void start()
@@ -146,13 +172,20 @@ public class World
     {
         _stage.addActor(_image);
         _stage.addActor(_btnNextPlayer.getButton());
-
     }
 
 
-    public void draw()
+    public void draw(OrthographicCamera camera)
     {
-        _stage.draw();
+        _tiledMapRenderer.setView(camera);
+        _tiledMapRenderer.render();
+
+        sb.setProjectionMatrix(camera.combined);
+        sb.begin();
+        sprite.draw(sb);
+        sb.end();
+
+        //_stage.draw();
     }
 
     public void update(float x, float y, float deltaX, float deltaY)

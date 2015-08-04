@@ -36,8 +36,8 @@ public class GridComponent
     private ArrayList<GridComponent>    _surroundingNodes = new ArrayList<GridComponent>() { };
 
     /**Properties**/
-    public Rectangle getRectangle() { return _rectangle; }
-    public void setRectangle(Rectangle rect) { _rectangle = rect; }
+    public Rectangle getBounds() { return _rectangle; }
+    public void setBounds(Rectangle rect) { _rectangle = rect; }
 
     public Vector2 getPosition() { return _position; }
     public void setPosition(Vector2 pos) { _position = pos;}
