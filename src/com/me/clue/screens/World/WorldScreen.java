@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.me.clue.Clue;
 import com.me.clue.controller.WorldController;
 import com.me.clue.model.BCharacter;
+import com.me.clue.model.GridComponent;
 import com.me.clue.model.SelectedCharacter;
 import com.me.clue.model.World;
 import com.me.clue.view.WorldRenderer;
@@ -64,13 +65,17 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
 
         InputMultiplexer im = new InputMultiplexer();
         GestureDetector gd = new GestureDetector(this);
+        im.addProcessor(_world.getStage());
         im.addProcessor(gd);
         im.addProcessor(this);
+
+
+        _renderer.getCamera().position.x = 0;
+        _renderer.getCamera().position.y = 0;
 
        Gdx.input.setInputProcessor(im);
 
         _world.setSelectedPlayers(_selectedPlayers);
-
 
         _world.start();
     }
@@ -78,9 +83,11 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     @Override
     public void render(float delta)
     {
-        Gdx.gl.glClearColor(1, 0, 0, 1);
+        Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+
+        _world.update();
 
         _controller.update(_renderer.getCamera());
         _renderer.render();
@@ -118,11 +125,27 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     @Override
     public boolean touchDown(float screenX, float screenY, int pointer, int button)
     {
-        Gdx.app.log("World Screen", "GestureListener touchDown called, finger: " + Integer.toString(button));
+        Gdx.app.log("World Screen", "GestureListener touchDown called");
 
-        //Vector3 clickCoordinates = new Vector3(screenX, screenY, 0);
-        //Vector3 position = _renderer.getCamera().unproject(clickCoordinates);
-        //_world.getSprite().setPosition(position.x, position.y);
+        Vector3 clickCoordinates = new Vector3(screenX, screenY, 0);
+        Vector3 position = _renderer.getCamera().unproject(clickCoordinates);
+
+
+        for(GridComponent[] c : _world.getComponentMatrix().getMatrix())
+        {
+            for(GridComponent component : c)
+            {
+                if(component.getPosition().x > position.x &&
+                        component.getPosition().x <= position.x + component.getWidth() &&
+                        component.getPosition().y > position.y &&
+                        component.getPosition().y <= position.y + component.getHeight())
+                {
+
+                    _world.getSprite().setPosition(component.getPosition().x - component.getWidth(),
+                                                    component.getPosition().y - component.getHeight());
+                }
+            }
+        }
 
         return true;
     }
@@ -177,8 +200,9 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     @Override
     public boolean zoom(float initialDistance, float distance)
     {
-        Gdx.app.log("World Screen", "GestureListener zoom called, initial distance: " + Float.toString(initialDistance) +
-            " Distance: " + Float.toString(distance));
+        Gdx.app.log("World Screen", "GestureListener zoom called, initial distance: " +
+                Float.toString(initialDistance) +
+                " Distance: " + Float.toString(distance));
         return true;
     }
 
@@ -271,7 +295,10 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     @Override
     public boolean mouseMoved(int screenX, int screenY)
     {
-        Gdx.app.log("World Screen", "InputProcessor mouseMoved called");
+        Vector3 mouseCoordinates = new Vector3(screenX, screenY, 0);
+        Vector3 position = _renderer.getCamera().unproject(mouseCoordinates);
+
+        //Gdx.app.log("World Screen", "Mouse Location: " + position);
         return false;
     }
 

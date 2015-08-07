@@ -1,17 +1,14 @@
 package com.me.clue.screens.World;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.me.clue.Enums;
 import com.me.clue.ai.Pathing;
+import com.me.clue.model.ComponentMatrix;
 import com.me.clue.model.GridComponent;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -23,13 +20,13 @@ public class WorldCreator
     private int _componentSizeY = 64;
     private FileHandle _handle;
     private char[][] _lines;
-    private GridComponent[][] _componentMatrix;
+    private ComponentMatrix _componentMatrix;
 
     private int rows, cols;
 
     public WorldCreator() {}
 
-    public GridComponent[][] createLevel(GridComponent[][] componentMatrix)
+    public ComponentMatrix createLevel(ComponentMatrix componentMatrix)
     {
         _componentMatrix = componentMatrix;
         _handle = Gdx.files.internal(_levelOneFile);
@@ -37,6 +34,7 @@ public class WorldCreator
         _lines = readMapFile(_handle);
 
         createMatrix();
+        fixPositions();
         assignSurroundingSquares();
         assignLocationNames();
 
@@ -45,47 +43,85 @@ public class WorldCreator
 
     private void createMatrix()
     {
-        _componentMatrix = new GridComponent[rows][cols];
+        _componentMatrix = new ComponentMatrix(cols, rows);
 
-        int x = 0;
-        int y = 0;
+        int positionX = 0;
+        int positionY = 0;
 
         //Add new components to the matrix
         int id = 0;
-        for (int i = 0; i < cols; i++)
+        for (int y = 0; y < rows; y++)//rows
         {
-            for (int j = 0; j < rows; j++)
+            for (int x = 0; x < cols; x++)//columns
             {
-                _componentMatrix[i][j] = new GridComponent(x, y, _componentSizeX, _componentSizeY);
-                _componentMatrix[i][j].setXIndex(i);
-                _componentMatrix[i][j].setYIndex(j);
-                _componentMatrix[i][j].setID(id);
+                _componentMatrix.add(new GridComponent(positionX, positionY,
+                                    _componentSizeX, _componentSizeY), x, y);
 
-                _componentMatrix[i][j].fromChar(_lines[i][j]);
+                _componentMatrix.getComponent(x, y).setXIndex(x);
+                _componentMatrix.getComponent(x, y).setYIndex(y);
+                _componentMatrix.getComponent(x, y).setID(id);
+
+                _componentMatrix.getComponent(x, y).fromChar(_lines[y][x]);
 
                 id++;
-                x += _componentSizeX;
+                positionX += _componentSizeX;
             }
-            y += _componentSizeY;
-            x = 0;
+            positionY += _componentSizeY;
+            positionX = 0;
         }
     }
 
+    /**
+     * LIBGDX has its origin at the bottom left and the positive y is up, x is right.
+     * This method puts the position of the matrix in the correct orientation with the map file
+     *  and lines it with the tiled map.
+     */
+    private void fixPositions()
+    {
+        for(int y = 0; y < rows / 2; y++)
+        {
+            for(int x = 0; x < cols; x++)
+            {
+                Vector2 temp = _componentMatrix.getComponent(x, y).getPosition();
+
+                //Swap positions
+                _componentMatrix.getComponent(x, y).setPosition(
+                        _componentMatrix.getComponent(x, (_componentMatrix.length() - 1) - y).getPosition());
+
+                _componentMatrix.getComponent(x, (_componentMatrix.length() - 1) - y).setPosition(temp);
+
+                //Move the components to line up with the tiled map.
+                _componentMatrix.getComponent(x, y).getPosition().x += _componentMatrix.getComponent(x, y).getWidth();
+                _componentMatrix.getComponent(x, y).getPosition().y += _componentMatrix.getComponent(x, y).getHeight();
+
+                _componentMatrix.getComponent(x, (_componentMatrix.length() - 1) - y).getPosition().x +=
+                        _componentMatrix.getComponent(x, (_componentMatrix.length() - 1) - y).getWidth();
+                _componentMatrix.getComponent(x, (_componentMatrix.length() - 1) - y).getPosition().y +=
+                        _componentMatrix.getComponent(x, (_componentMatrix.length() - 1) - y).getHeight();
+            }
+        }
+    }
+
+
     private void assignSurroundingSquares()
     {
-        int maxPossibleMoves = 4;
-        Vector2[] moves = Pathing.InitMovements(maxPossibleMoves);
+        Vector2[] moves = Pathing.InitMovements(4);
 
-        for (GridComponent[] c : _componentMatrix)
+        for (GridComponent[] c : _componentMatrix.getMatrix())
         {
             for(GridComponent component : c)
             {
-                for (int i = 0; i < maxPossibleMoves; i++)
+                //Add surrounding squares
+                for (Vector2 surrounding : moves)
                 {
-                    GridComponent tempSquare;
-                    if (Pathing.ValidCoordinates((int)(component.getXIndex() + moves[i].x), (int)(component.getYIndex() + moves[i].y), 42))
+                    if (Pathing.ValidCoordinates((int)(component.getXIndex() + surrounding.x),
+                            (int)(component.getYIndex() + surrounding.y),
+                            cols, rows))
                     {
-                        tempSquare = _componentMatrix[(int)(component.getXIndex() + moves[i].x)][(int)(component.getYIndex() + moves[i].y)];
+                        GridComponent tempSquare = _componentMatrix.getComponent(
+                                (int)(component.getXIndex() + surrounding.x),
+                                (int)(component.getYIndex() + surrounding.y));
+
                         tempSquare.setMoveAmount(component.getMoveAmount() + 1);
                         component.getSurroundingNodes().add(tempSquare);
                     }
@@ -96,7 +132,7 @@ public class WorldCreator
 
     private void assignLocationNames()
     {
-        for (GridComponent[] c : _componentMatrix)
+        for (GridComponent[] c : _componentMatrix.getMatrix())
         {
             for(GridComponent component : c)
             {

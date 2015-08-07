@@ -206,9 +206,9 @@ public class Pathing
     /*
      * Checks that the coordinate it within the grid.
      */
-    public static boolean ValidCoordinates(int x, int y, int size)
+    public static boolean ValidCoordinates(int x, int y, int sizeX, int sizeY)
     {
-        return x >= 0 && y >= 0 && x <= size - 1 && y <= size - 1;
+        return x >= 0 && y >= 0 && x <= sizeX - 1 && y <= sizeY - 1;
     }
 
     public static ArrayList<Vector2> ValidMoves(int startingX, int startingY)
@@ -221,7 +221,7 @@ public class Pathing
             int newX = startingX + (int) movement.x;
             int newY = startingY + (int) movement.y;
 
-            if (ValidCoordinates(newX, newY, 42))
+            if (ValidCoordinates(newX, newY, 42, 42))
             {
                 movableLocations.add(new Vector2(newX, newY));
             }

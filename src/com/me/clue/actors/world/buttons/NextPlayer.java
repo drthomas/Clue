@@ -22,7 +22,7 @@ public class NextPlayer extends CustomButton
         {
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button)
             {
-                Gdx.app.log("NextPlayer Button", "Pressed");
+                press();
                 _pressed = true;
                 setClickState(ClickState.PRESSED);
                 return true;
@@ -30,7 +30,7 @@ public class NextPlayer extends CustomButton
 
             public void touchUp(InputEvent event, float x, float y, int pointer, int button)
             {
-                Gdx.app.log("NextPlayer Button", "Released");
+                release();
                 setClickState(ClickState.RELEASED);
             }
         });
@@ -51,5 +51,15 @@ public class NextPlayer extends CustomButton
 
         _button.setOrigin(0, 0);
         _button.setPosition(_position.x, _position.y);
+    }
+
+    public void press()
+    {
+        Gdx.app.log("Next Player Button", "Pressed");
+    }
+
+    public void release()
+    {
+        Gdx.app.log("Next Player Button", "Released");
     }
 }

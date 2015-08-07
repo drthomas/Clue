@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -15,7 +16,9 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.me.clue.Clue;
+import com.me.clue.Enums;
 import com.me.clue.controller.WorldController;
+import com.me.clue.model.ComponentMatrix;
 import com.me.clue.model.GridComponent;
 import com.me.clue.model.World;
 
@@ -31,6 +34,8 @@ public class WorldRenderer
     private World               _world;
 
     ShapeRenderer debugRenderer = new ShapeRenderer();
+    private SpriteBatch _debugBatch;
+    private BitmapFont _debugFont;
 
     private OrthographicCamera  _camera;
 
@@ -40,10 +45,8 @@ public class WorldRenderer
     private float ppuX;	// pixels per unit on the X axis
     private float ppuY;	// pixels per unit on the Y axis
 
-
-
     /**Debug Fields**/
-    private GridComponent[][] _componenentMatrix;
+    private ComponentMatrix _componenentMatrix;
 
     public OrthographicCamera getCamera() { return _camera; }
 
@@ -68,6 +71,9 @@ public class WorldRenderer
 
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
+
+        _debugBatch = new SpriteBatch();
+        _debugFont = new BitmapFont(Gdx.files.internal("arial-15.fnt"), false);
 
         _camera = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
         _camera.position.set(CAMERA_WIDTH / 2f, CAMERA_HEIGHT / 2f, 0);
@@ -95,15 +101,26 @@ public class WorldRenderer
         debugRenderer.begin(ShapeRenderer.ShapeType.Line);
 
         //Render matrix
-        for(GridComponent[] c : _componenentMatrix)
+        for(GridComponent[] c : _componenentMatrix.getMatrix())
         {
             for(GridComponent component : c)
             {
                 Rectangle rect = component.getBounds();
-                float x1 = component.getPosition().x;
-                float y1 = component.getPosition().y;
-                debugRenderer.setColor(new Color(0, 1, 0, 1));
-                debugRenderer.rect(x1, y1, rect.width, rect.height);
+                float x1 = component.getPosition().x;// + _world.getMapPixelWidth();
+                float y1 = component.getPosition().y;// + _world.getMapPixelHeight();
+
+                if(component.getContentCode() == Enums.GridContent.Empty)
+                    debugRenderer.setColor(new Color(0.9176f, 0.7490f, 0.4745f, 0));
+                else if(component.getContentCode() == Enums.GridContent.Room)
+                    debugRenderer.setColor(new Color(0.4078f, 0.1412f, 0, 0));
+                else if(component.getContentCode() == Enums.GridContent.Start)
+                    debugRenderer.setColor(new Color(1, 1, 1, 0));
+                else if(component.getContentCode() == Enums.GridContent.Door)
+                    debugRenderer.setColor(new Color(0.5882f, 0.1294f, 0.0863f, 0));
+                else if(component.getContentCode() == Enums.GridContent.Wall)
+                    debugRenderer.setColor(new Color(0.7176f, 0.5608f, 0.3216f, 0));
+
+                debugRenderer.rect(x1, y1, -rect.width, -rect.height);
             }
         }
 

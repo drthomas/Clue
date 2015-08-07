@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -20,13 +21,12 @@ import com.me.clue.screens.World.WorldCreator;
 
 import java.util.ArrayList;
 
-
 public class World
 {
     /**Fields**/
     private ArrayList<SelectedCharacter> _selectedPlayers = new ArrayList<SelectedCharacter>() { };
     private ArrayList<BCharacter> _playerList = new ArrayList<BCharacter>() { };
-    private GridComponent[][] _componentMatrix;
+    private ComponentMatrix _componentMatrix;
     private Cards _deck;
     private WorldCreator _worldCreator = new WorldCreator();
     private BCharacter _currentPlayer = new BCharacter("");
@@ -39,17 +39,27 @@ public class World
     private TextureRegion _region;
     private Image _image;
 
-
     private TiledMap _tiledMap;
+    private MapProperties _mapProperties;
     private TiledMapRenderer _tiledMapRenderer;
+
+    private int _mapWidth;
+    private int _mapHeight;
+    private int _tilePixelWidth;
+    private int _tilePixelHeight;
+    private int _mapPixelWidth;
+    private int _mapPixelHeight;
 
     SpriteBatch sb;
     Texture texture;
     Sprite sprite;
 
     /**Properties**/
-    public GridComponent[][] getComponentMatrix() { return _componentMatrix; }
+    public ComponentMatrix getComponentMatrix() { return _componentMatrix; }
     public WorldCreator getWorldCreator() { return _worldCreator; }
+
+    public NextPlayer getNextPlayerButton() { return _btnNextPlayer; }
+    public Stage getStage() { return _stage;}
 
     public void setSelectedPlayers(ArrayList<SelectedCharacter> list) { _selectedPlayers = list; }
     public Image getImage() { return _image;}
@@ -57,11 +67,23 @@ public class World
     public TiledMap getTiledMap() { return _tiledMap; }
     public Sprite getSprite() { return sprite; }
 
+    public int getMapPixelWidth() { return _mapPixelWidth; }
+    public int getMapPixelHeight() { return _mapPixelHeight; }
+
     public World(Stage stage)
     {
         _stage = stage;
 
         _tiledMap = new TmxMapLoader().load("images/ClueTileSheet.tmx");
+        _mapProperties = _tiledMap.getProperties();
+
+        _mapWidth = _mapProperties.get("width", Integer.class);
+        _mapHeight = _mapProperties.get("height", Integer.class);
+        _tilePixelWidth = _mapProperties.get("tilewidth", Integer.class);
+        _tilePixelHeight = _mapProperties.get("tileheight", Integer.class);
+        _mapPixelWidth = _mapWidth * _tilePixelWidth;
+        _mapPixelHeight = _mapHeight * _tilePixelHeight;
+
         _tiledMapRenderer = new OrthogonalTiledMapRenderer(_tiledMap);
 
         sb = new SpriteBatch();
@@ -170,7 +192,7 @@ public class World
 
     private void createStage()
     {
-        _stage.addActor(_image);
+        //_stage.addActor(_image);
         _stage.addActor(_btnNextPlayer.getButton());
     }
 
@@ -185,11 +207,14 @@ public class World
         sprite.draw(sb);
         sb.end();
 
-        //_stage.draw();
+        _stage.draw();
     }
 
-    public void update(float x, float y, float deltaX, float deltaY)
+    public void update()
     {
-        _image.setPosition(x, -y);
+        if(_btnNextPlayer.isPressed())
+        {
+            _btnNextPlayer.setPressed(false);
+        }
     }
 }
