@@ -1,22 +1,17 @@
 package com.me.clue.model;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.me.clue.Enums;
-import com.me.clue.actors.world.buttons.NextPlayer;
 import com.me.clue.carddata.Cards;
+import com.me.clue.huds.WorldHUD;
 import com.me.clue.screens.World.WorldCreator;
 
 import java.util.ArrayList;
@@ -32,12 +27,9 @@ public class World
     private BCharacter _currentPlayer = new BCharacter("");
     private BCharacter _nextPlayer = new BCharacter("");
 
-    private NextPlayer _btnNextPlayer;
+    private WorldHUD _hud;
 
     private Stage _stage;
-    private Texture _texture;
-    private TextureRegion _region;
-    private Image _image;
 
     private TiledMap _tiledMap;
     private MapProperties _mapProperties;
@@ -50,22 +42,22 @@ public class World
     private int _mapPixelWidth;
     private int _mapPixelHeight;
 
-    SpriteBatch sb;
-    Texture texture;
-    Sprite sprite;
+    private SpriteBatch _spriteBatch;
 
     /**Properties**/
+    public void setSelectedPlayers(ArrayList<SelectedCharacter> list) { _selectedPlayers = list; }
     public ComponentMatrix getComponentMatrix() { return _componentMatrix; }
+
+    public BCharacter getCurrentPlayer() { return _currentPlayer; }
+    public void setCurrentPlayer(BCharacter player) { _currentPlayer = player; }
+
+    public BCharacter getNextPlayer() { return _nextPlayer; }
+    public void setNextPlayer(BCharacter player) { _nextPlayer = player; }
+
     public WorldCreator getWorldCreator() { return _worldCreator; }
 
-    public NextPlayer getNextPlayerButton() { return _btnNextPlayer; }
     public Stage getStage() { return _stage;}
-
-    public void setSelectedPlayers(ArrayList<SelectedCharacter> list) { _selectedPlayers = list; }
-    public Image getImage() { return _image;}
-
     public TiledMap getTiledMap() { return _tiledMap; }
-    public Sprite getSprite() { return sprite; }
 
     public int getMapPixelWidth() { return _mapPixelWidth; }
     public int getMapPixelHeight() { return _mapPixelHeight; }
@@ -73,6 +65,13 @@ public class World
     public World(Stage stage)
     {
         _stage = stage;
+
+        initialize();
+    }
+
+    private void initialize()
+    {
+        _hud = new WorldHUD(this);
 
         _tiledMap = new TmxMapLoader().load("images/ClueTileSheet.tmx");
         _mapProperties = _tiledMap.getProperties();
@@ -86,19 +85,15 @@ public class World
 
         _tiledMapRenderer = new OrthogonalTiledMapRenderer(_tiledMap);
 
-        sb = new SpriteBatch();
-        texture = new Texture(Gdx.files.internal("pik.png"));
-        sprite = new Sprite(texture);
+        _spriteBatch = new SpriteBatch();
     }
 
     public void start()
     {
         _componentMatrix = _worldCreator.createLevel(_componentMatrix);
 
-        loadTextures();
         createPlayers();
         dealCards();
-        createActors();
         createStage();
 
         run();
@@ -106,32 +101,13 @@ public class World
 
     private void run()
     {
+        //Set the current player and the next player
         _currentPlayer = _playerList.get(0);
         _nextPlayer = _playerList.get(1);
 
         //Move the current player to the end of the player list
         _playerList.remove(_currentPlayer);
         _playerList.add(_currentPlayer);
-    }
-
-    private void loadTextures()
-    {
-        try
-        {
-            _texture = new Texture(Gdx.files.internal("images/large.jpg"));
-            _texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        }
-        catch(Exception e)
-        {
-            Gdx.app.log("World Renderer: ", "File not found");
-        }
-        finally
-        {
-            _region = new TextureRegion(_texture);
-            _image = new Image(_region);
-            _image.setOrigin(0, 0);
-            _image.setPosition(-_image.getWidth() / 2, -_image.getHeight() / 2);
-        }
     }
 
     private void createPlayers()
@@ -145,6 +121,10 @@ public class World
                 if(true)
                 {
                     //TODO Differentiate between NPC and PlayerCharacter
+                    temp = new PlayerCharacter(character.getName());
+                }
+                else
+                {
                     temp = new NPC(character.getName());
                 }
 
@@ -173,6 +153,7 @@ public class World
                 }
 
                 temp.setMoveAmount(1);
+                temp.setCurrentNode(_worldCreator.getStartingPosition());
                 _playerList.add(temp);
             }
         }
@@ -185,36 +166,82 @@ public class World
         _deck.deal(_playerList);
     }
 
-    private void createActors()
-    {
-        _btnNextPlayer = new NextPlayer(new Vector2(0, 0));
-    }
-
     private void createStage()
     {
-        //_stage.addActor(_image);
-        _stage.addActor(_btnNextPlayer.getButton());
+        for(Actor actor : _hud.getStage().getActors().toArray())
+        {
+            _stage.addActor(actor);
+        }
     }
 
+    public void nextPlayer()
+    {
+        _currentPlayer.setTurn(false);
+
+        _currentPlayer.setStart(_currentPlayer.getCurrentNode().getContentCode() == Enums.GridContent.Start);
+
+        for (GridComponent component : _currentPlayer.getValidMoves())
+        {
+            component.setOpen(true);
+        }
+
+        _currentPlayer.getValidMoves().clear();
+
+        _currentPlayer = _playerList.get(0);
+
+        _currentPlayer.setTurn(true);
+
+        _playerList.remove(_currentPlayer);
+        _playerList.add(_currentPlayer);
+
+        if (_currentPlayer instanceof PlayerCharacter)
+        {
+            //MessageBox.Show("Next Player?");
+            //btnPath.Enabled = false;
+            //btnMove.Enabled = false;
+        }
+        else if (_currentPlayer instanceof NPC)
+        {
+            //btnPath.Enabled = true;
+            //btnMove.Enabled = false;
+            //if(autoPlay)
+            //    Roll();
+        }
+    }
+
+    public void roll()
+    {
+        _currentPlayer.setMoveAmount(_hud.getRoll().getAmount());
+
+        if (_currentPlayer instanceof PlayerCharacter)
+        {
+            PlayerCharacter tempPlayer = (PlayerCharacter)_currentPlayer;
+            /*ArrayList<GridComponent> validMoves = */tempPlayer.FindMoves(_componentMatrix.getMatrix());
+        }
+    }
 
     public void draw(OrthographicCamera camera)
     {
         _tiledMapRenderer.setView(camera);
         _tiledMapRenderer.render();
 
-        sb.setProjectionMatrix(camera.combined);
-        sb.begin();
-        sprite.draw(sb);
-        sb.end();
+        _spriteBatch.setProjectionMatrix(camera.combined);
+        _spriteBatch.begin();
+
+        for(BCharacter player : _playerList)
+        {
+            player.getSprite().setPosition(player.getCurrentNode().getPosition().x - player.getCurrentNode().getWidth(),
+                    player.getCurrentNode().getPosition().y - player.getCurrentNode().getHeight());
+            player.getSprite().draw(_spriteBatch);
+        }
+
+        _spriteBatch.end();
 
         _stage.draw();
     }
 
     public void update()
     {
-        if(_btnNextPlayer.isPressed())
-        {
-            _btnNextPlayer.setPressed(false);
-        }
+        _hud.update();
     }
 }

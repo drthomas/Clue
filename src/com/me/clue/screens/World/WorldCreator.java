@@ -264,6 +264,27 @@ public class WorldCreator
         return p;
     }
 
+    public GridComponent getStartingPosition()
+    {
+        ArrayList<GridComponent> startList = new ArrayList<GridComponent>() { };
+        GridComponent startPosition;
+
+        for(GridComponent[] c : _componentMatrix.getMatrix())
+        {
+            for(GridComponent component : c)
+            {
+                if(component.getContentCode() == Enums.GridContent.Start)
+                {
+                    startList.add(component);
+                }
+            }
+        }
+
+        startPosition = startList.get(startList.size() / 2);
+
+        return startPosition;
+    }
+
     public boolean squareOpen(GridComponent[][] componentMatrix, int x, int y)
     {
         return componentMatrix[x][y].isOpen() ||

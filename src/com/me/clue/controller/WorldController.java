@@ -5,7 +5,11 @@ import java.util.Map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Vector3;
+import com.me.clue.Enums;
+import com.me.clue.model.GridComponent;
 import com.me.clue.model.World;
+import com.me.clue.view.WorldRenderer;
 
 
 public class WorldController

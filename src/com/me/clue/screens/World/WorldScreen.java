@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
 import com.me.clue.Clue;
+import com.me.clue.Enums;
 import com.me.clue.controller.WorldController;
 import com.me.clue.model.BCharacter;
 import com.me.clue.model.GridComponent;
@@ -28,6 +29,8 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class WorldScreen implements Screen, GestureListener, InputProcessor
 {
+    private Vector3 _touchDown;
+    private Vector3 _touchUp;
 
     private World           _world;
     private WorldRenderer   _renderer;
@@ -54,7 +57,7 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
         _stage = new Stage(new ExtendViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()));
 
         _world = new World(_stage);
-        _renderer = new WorldRenderer(_world, true);
+        _renderer = new WorldRenderer(_world, false);
         _controller = new WorldController(_world);
     }
 
@@ -127,41 +130,21 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     {
         Gdx.app.log("World Screen", "GestureListener touchDown called");
 
-        Vector3 clickCoordinates = new Vector3(screenX, screenY, 0);
-        Vector3 position = _renderer.getCamera().unproject(clickCoordinates);
-
-
-        for(GridComponent[] c : _world.getComponentMatrix().getMatrix())
-        {
-            for(GridComponent component : c)
-            {
-                if(component.getPosition().x > position.x &&
-                        component.getPosition().x <= position.x + component.getWidth() &&
-                        component.getPosition().y > position.y &&
-                        component.getPosition().y <= position.y + component.getHeight())
-                {
-
-                    _world.getSprite().setPosition(component.getPosition().x - component.getWidth(),
-                                                    component.getPosition().y - component.getHeight());
-                }
-            }
-        }
-
-        return true;
+        return false;
     }
 
     @Override
     public boolean tap(float x, float y, int count, int button)
     {
         Gdx.app.log("World Screen", "GestureListener tap called");
-        return true;
+        return false;
     }
 
     @Override
     public boolean longPress(float x, float y)
     {
         Gdx.app.log("World Screen", "GestureListener longPress called");
-        return true;
+        return false;
     }
 
     @Override
@@ -183,9 +166,6 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
         _renderer.getCamera().unproject(touchPos);
 
         _renderer.getCamera().translate(-deltaX, deltaY);
-
-        //_world.getSprite().setPosition(touchPos.x - _world.getSprite().getWidth() / 2,
-        //        touchPos.y - _world.getSprite().getHeight() / 2);
 
         return true;
     }
@@ -275,6 +255,35 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     public boolean touchDown(int screenX, int screenY, int pointer, int button)
     {
         Gdx.app.log("World Screen", "InputProcessor touchDown called");
+
+
+        Vector3 clickCoordinates = new Vector3(screenX, screenY, 0);
+        Vector3 position = _renderer.getCamera().unproject(clickCoordinates);
+
+        GridComponent clickedComponent = null;
+
+        for(GridComponent[] c : _world.getComponentMatrix().getMatrix())
+        {
+            for(GridComponent component : c)
+            {
+                if(component.getPosition().x > position.x &&
+                        component.getPosition().x <= position.x + component.getWidth() &&
+                        component.getPosition().y > position.y &&
+                        component.getPosition().y <= position.y + component.getHeight())
+                {
+                    clickedComponent = component;
+                    break;
+                }
+            }
+        }
+
+        if(clickedComponent != null && clickedComponent.getContentCode() != Enums.GridContent.Wall)
+        {
+            _world.getCurrentPlayer().setCurrentNode(clickedComponent);
+            _world.getCurrentPlayer().setStart(clickedComponent.getContentCode() == Enums.GridContent.Start);
+            _world.getCurrentPlayer().setInRoom(clickedComponent.getContentCode() == Enums.GridContent.Room);
+        }
+
         return true;
     }
 

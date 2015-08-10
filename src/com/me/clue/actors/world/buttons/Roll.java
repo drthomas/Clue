@@ -10,9 +10,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.me.clue.custom.CustomButton;
 
+import java.util.Random;
+
 
 public class Roll extends CustomButton
 {
+    private int _amount = 0;
+    private Random rnd = new Random();
+
+    public int getAmount() { return _amount; }
+
     public Roll(Vector2 position)
     {
         super(position);
@@ -57,11 +64,12 @@ public class Roll extends CustomButton
 
     public void press()
     {
-        Gdx.app.log("Next Player Button", "Pressed");
+        Gdx.app.log("Roll Button", "Pressed");
+        _amount = rnd.nextInt(10) + 2;
     }
 
     public void release()
     {
-        Gdx.app.log("Next Player Button", "Released");
+        Gdx.app.log("Roll Button", "Released");
     }
 }

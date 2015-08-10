@@ -1,8 +1,10 @@
 package com.me.clue.model;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.me.clue.Enums.CharacterContent;
 import com.me.clue.Enums.GridContent;
 import com.me.clue.ai.Choice;
@@ -11,7 +13,7 @@ import com.me.clue.ai.Pathing;
 import java.util.ArrayList;
 
 
-public class BCharacter extends Actor
+public class BCharacter
 {
     private String                              _character;
     protected String                            _currentLocation;  //Name of location, i.e. a room name,
@@ -36,15 +38,29 @@ public class BCharacter extends Actor
     private ArrayList<ArrayList<GridComponent>> _possiblePaths = new ArrayList<ArrayList<GridComponent>>(){ };
     private ArrayList<GridComponent>            _currentPath = new ArrayList<GridComponent>() { };
     protected ArrayList<GridComponent>          _validMoves  = new ArrayList<GridComponent>() { };
-    //public BoardControl BoardControl { get; set; }
-    //public QuestionControl QuestionControl { get; set; }
+
+    protected Sprite _sprite;
+    protected Texture _texture;
+
 
     /**Properties**/
     public String getCharacter() { return _character; }
     public void setCharacter(String c) { _character = c; }
 
+    public boolean inRoom() { return _inRoom; }
+    public void setInRoom(boolean r) { _inRoom = r; }
+
+    public boolean isTurn() { return _isTurn; }
+    public void setTurn(boolean t) { _isTurn = t; }
+
+    public boolean isStart() { return _isStart; }
+    public void setStart(boolean s) { _isStart = s; }
+
     public int getMoveAmount() { return _moveAmount; }
     public void setMoveAmount(int amount) { _moveAmount = amount; }
+
+    public GridComponent getCurrentNode() { return _currentNode; }
+    public void setCurrentNode(GridComponent node) { _currentNode = node; }
 
     public CharacterContent getContentCode() {return _contentCode; }
     public void setContentCode(CharacterContent code) { _contentCode = code; }
@@ -58,6 +74,11 @@ public class BCharacter extends Actor
     public ArrayList<String> getUnknownCards() { return _unknownCards; }
     public void setUnknownCards(ArrayList<String> list) { _unknownCards = list; }
 
+    public ArrayList<GridComponent> getValidMoves() { return _validMoves; }
+    public void setValidMoves(ArrayList<GridComponent> list) { _validMoves = list; }
+
+
+    public Sprite getSprite() { return _sprite; }
 
 
     public BCharacter(String name)
@@ -92,8 +113,16 @@ public class BCharacter extends Actor
         _possiblePaths = new ArrayList<ArrayList<GridComponent>>() { };
         _currentPath = new ArrayList<GridComponent>() { };
         _validMoves = new ArrayList<GridComponent>() { };
-        //BoardControl = null;
-        //QuestionControl = null;
+
+        createSprite();
+    }
+
+    private void createSprite()
+    {
+        _texture = new Texture(Gdx.files.internal("images/b.png"));
+        _sprite = new Sprite(_texture);
+
+        //TODO Each character needs a different sprite.
     }
 
     public ArrayList<GridComponent> FindPath(GridComponent[][] componentMatrix, GridComponent startNode, GridComponent goalNode)
@@ -110,68 +139,49 @@ public class BCharacter extends Actor
     {
         _validMoves.clear();
 
-        if (_inRoom)
-        {
-            ArrayList<GridComponent> doors = new ArrayList<GridComponent>() { };
+        ArrayList<GridComponent> tempList = null;
 
+        //In a room or at the start
+        if(_inRoom || _isStart)
+        {
             for (GridComponent[] n : componentMatrix)
             {
                 for(GridComponent node : n)
                 {
-                    if (node.getContentCode() == GridContent.Door && node.getLocationName().equalsIgnoreCase(_currentLocation))
+                    if(_inRoom && node.getContentCode() == GridContent.Door
+                            && node.getLocationName().equalsIgnoreCase(_currentLocation))
                     {
-                        doors.add(node);
+                        tempList = Pathing.FindValidMoves(node, _moveAmount);
                     }
-                }
-            }
-
-            for(GridComponent doorNode : doors)
-            {
-                ArrayList<GridComponent> tempList = Pathing.FindValidMoves(doorNode, _moveAmount);
-
-                for (GridComponent tempNode : tempList)
-                {
-                    if (!_validMoves.contains(tempNode))
+                    else if(_isStart && node.getContentCode() == GridContent.Start)
                     {
-                        _validMoves.add(tempNode);
+                        tempList = Pathing.FindValidMoves(node, _moveAmount);
                     }
                 }
             }
         }
-        else if (_isStart)
+
+        if(tempList != null)
         {
-            ArrayList<GridComponent> startNodes = new ArrayList<GridComponent>() { };
-
-            for (GridComponent[] n : componentMatrix)
+            for (GridComponent tempNode : tempList)
             {
-                for(GridComponent node : n)
+                if (!_validMoves.contains(tempNode))
                 {
-                    if (node.getContentCode() == GridContent.Start)
-                    {
-                        startNodes.add(node);
-                    }
+                    _validMoves.add(tempNode);
                 }
             }
 
-            for (GridComponent node : startNodes)
-            {
-                ArrayList<GridComponent> tempList = Pathing.FindValidMoves(node, _moveAmount);
-
-                for (GridComponent tempNode : tempList)
-                {
-                    if (!_validMoves.contains(tempNode))
-                    {
-                        _validMoves.add(tempNode);
-                    }
-                }
-            }
+            return _validMoves;
         }
-        else
+
+        //Not in a room or at the start
+        if(!_inRoom && !_isStart)
         {
             _validMoves.addAll(Pathing.FindValidMoves(_currentNode, _moveAmount));
+            return _validMoves;
         }
 
-        return _validMoves;
+        return null;
     }
 
     public void Move(GridComponent component)

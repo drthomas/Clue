@@ -25,6 +25,8 @@ import com.me.clue.model.World;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import javax.microedition.khronos.opengles.GL10;
+
 
 public class WorldRenderer
 {
@@ -33,7 +35,7 @@ public class WorldRenderer
 
     private World               _world;
 
-    ShapeRenderer debugRenderer = new ShapeRenderer();
+    private ShapeRenderer debugRenderer = new ShapeRenderer();
     private SpriteBatch _debugBatch;
     private BitmapFont _debugFont;
 
@@ -88,9 +90,32 @@ public class WorldRenderer
         _camera.update();
 
         _world.draw(_camera);
+        drawValidMoves();
 
         if (_debug)
             drawDebug();
+    }
+
+    private void drawValidMoves()
+    {
+        debugRenderer.setProjectionMatrix(_camera.combined);
+        debugRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        Gdx.gl.glEnable(GL10.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+
+        for(GridComponent component : _world.getCurrentPlayer().getValidMoves())
+        {
+            Rectangle rect = component.getBounds();
+            float x1 = component.getPosition().x;
+            float y1 = component.getPosition().y;
+
+            debugRenderer.setColor(new Color(0.1412f, 0.6196f, 0.2471f, 0.8f));
+
+            debugRenderer.rect(x1, y1, -rect.width, -rect.height);
+        }
+
+        debugRenderer.end();
     }
 
     private void drawDebug()
@@ -98,7 +123,10 @@ public class WorldRenderer
         _componenentMatrix = _world.getComponentMatrix();
 
         debugRenderer.setProjectionMatrix(_camera.combined);
-        debugRenderer.begin(ShapeRenderer.ShapeType.Line);
+        debugRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        Gdx.gl.glEnable(GL10.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 
         //Render matrix
         for(GridComponent[] c : _componenentMatrix.getMatrix())
@@ -106,19 +134,19 @@ public class WorldRenderer
             for(GridComponent component : c)
             {
                 Rectangle rect = component.getBounds();
-                float x1 = component.getPosition().x;// + _world.getMapPixelWidth();
-                float y1 = component.getPosition().y;// + _world.getMapPixelHeight();
+                float x1 = component.getPosition().x;
+                float y1 = component.getPosition().y;
 
                 if(component.getContentCode() == Enums.GridContent.Empty)
-                    debugRenderer.setColor(new Color(0.9176f, 0.7490f, 0.4745f, 0));
+                    debugRenderer.setColor(new Color(0.9176f, 0.7490f, 0.4745f, 0.8f));
                 else if(component.getContentCode() == Enums.GridContent.Room)
-                    debugRenderer.setColor(new Color(0.4078f, 0.1412f, 0, 0));
+                    debugRenderer.setColor(new Color(0.4078f, 0.1412f, 0, 0.8f));
                 else if(component.getContentCode() == Enums.GridContent.Start)
-                    debugRenderer.setColor(new Color(1, 1, 1, 0));
+                    debugRenderer.setColor(new Color(1, 1, 1, 0.8f));
                 else if(component.getContentCode() == Enums.GridContent.Door)
-                    debugRenderer.setColor(new Color(0.5882f, 0.1294f, 0.0863f, 0));
+                    debugRenderer.setColor(new Color(0.5882f, 0.1294f, 0.0863f, 0.8f));
                 else if(component.getContentCode() == Enums.GridContent.Wall)
-                    debugRenderer.setColor(new Color(0.7176f, 0.5608f, 0.3216f, 0));
+                    debugRenderer.setColor(new Color(0.7176f, 0.5608f, 0.3216f, 0.8f));
 
                 debugRenderer.rect(x1, y1, -rect.width, -rect.height);
             }
