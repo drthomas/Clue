@@ -139,49 +139,44 @@ public class BCharacter
     {
         _validMoves.clear();
 
-        ArrayList<GridComponent> tempList = null;
-
         //In a room or at the start
         if(_inRoom || _isStart)
         {
             for (GridComponent[] n : componentMatrix)
             {
-                for(GridComponent node : n)
+                for (GridComponent node : n)
                 {
-                    if(_inRoom && node.getContentCode() == GridContent.Door
+                    if (_inRoom && node.getContentCode() == GridContent.Door
                             && node.getLocationName().equalsIgnoreCase(_currentLocation))
                     {
-                        tempList = Pathing.FindValidMoves(node, _moveAmount);
+                        for (GridComponent tempNode : Pathing.FindValidMoves(node, _moveAmount))
+                        {
+                            if (!_validMoves.contains(tempNode))
+                            {
+                                _validMoves.add(tempNode);
+                            }
+                        }
                     }
-                    else if(_isStart && node.getContentCode() == GridContent.Start)
+                    else if (_isStart && node.getContentCode() == GridContent.Start)
                     {
-                        tempList = Pathing.FindValidMoves(node, _moveAmount);
+                        for (GridComponent tempNode : Pathing.FindValidMoves(node, _moveAmount))
+                        {
+                            if (!_validMoves.contains(tempNode))
+                            {
+                                _validMoves.add(tempNode);
+                            }
+                        }
                     }
                 }
             }
         }
-
-        if(tempList != null)
-        {
-            for (GridComponent tempNode : tempList)
-            {
-                if (!_validMoves.contains(tempNode))
-                {
-                    _validMoves.add(tempNode);
-                }
-            }
-
-            return _validMoves;
-        }
-
-        //Not in a room or at the start
-        if(!_inRoom && !_isStart)
+        else
         {
             _validMoves.addAll(Pathing.FindValidMoves(_currentNode, _moveAmount));
             return _validMoves;
         }
 
-        return null;
+        return _validMoves;
     }
 
     public void Move(GridComponent component)

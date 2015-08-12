@@ -95,11 +95,9 @@ public class World
         createPlayers();
         dealCards();
         createStage();
-
-        run();
     }
 
-    private void run()
+    public void run()
     {
         //Set the current player and the next player
         _currentPlayer = _playerList.get(0);
@@ -157,6 +155,8 @@ public class World
                 _playerList.add(temp);
             }
         }
+
+        _currentPlayer = _playerList.get(0);
     }
 
     private void dealCards()
@@ -236,7 +236,10 @@ public class World
         }
 
         _spriteBatch.end();
+    }
 
+    public void drawHUD()
+    {
         _stage.draw();
     }
 

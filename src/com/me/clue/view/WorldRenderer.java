@@ -14,7 +14,9 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.me.clue.Clue;
 import com.me.clue.Enums;
 import com.me.clue.controller.WorldController;
@@ -30,16 +32,17 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class WorldRenderer
 {
-    private static final float CAMERA_WIDTH = 800f;
-    private static final float CAMERA_HEIGHT = 400f;
+    public static final float CAMERA_WIDTH = 800f;
+    public static final float CAMERA_HEIGHT = 400f;
 
-    private World               _world;
+    private World _world;
 
     private ShapeRenderer debugRenderer = new ShapeRenderer();
     private SpriteBatch _debugBatch;
     private BitmapFont _debugFont;
 
     private OrthographicCamera  _camera;
+    private ExtendViewport _viewport;
 
     private boolean _debug = false;
     private int _width;
@@ -70,20 +73,31 @@ public class WorldRenderer
 
     private void initialize()
     {
-
-        float w = Gdx.graphics.getWidth();
-        float h = Gdx.graphics.getHeight();
-
         _debugBatch = new SpriteBatch();
         _debugFont = new BitmapFont(Gdx.files.internal("arial-15.fnt"), false);
 
-        _camera = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
-        _camera.position.set(CAMERA_WIDTH / 2f, CAMERA_HEIGHT / 2f, 0);
+        _camera = new OrthographicCamera();
+        _camera.setToOrtho(false, CAMERA_WIDTH, CAMERA_HEIGHT);
 
-        _camera.setToOrtho(false, w, h);
+        _viewport = new ExtendViewport(CAMERA_WIDTH, CAMERA_HEIGHT, _camera);
+        _viewport.apply();
+
+        _camera.position.set(_camera.viewportWidth / 2f, _camera.viewportHeight / 2f, 0);
 
         _camera.update();
     }
+
+    public void resetPosition()
+    {
+        Vector2 cameraStart = new Vector2(
+                _world.getCurrentPlayer().getCurrentNode().getPosition().x -
+                        (_world.getCurrentPlayer().getCurrentNode().getWidth() / 2),
+                _world.getCurrentPlayer().getCurrentNode().getPosition().y -
+                        (_world.getCurrentPlayer().getCurrentNode().getHeight() / 2));
+
+        _camera.position.set(cameraStart.x, cameraStart.y, 0);
+    }
+
 
     public void render()
     {
@@ -91,9 +105,26 @@ public class WorldRenderer
 
         _world.draw(_camera);
         drawValidMoves();
+        _world.drawHUD();
 
         if (_debug)
             drawDebug();
+    }
+
+    public void resize(int width, int height)
+    {
+        _viewport.update(width, height);
+        _camera.position.set(_camera.viewportWidth / 2f, _camera.viewportHeight / 2f, 0);
+    }
+
+    public void zoomIn()
+    {
+        _camera.zoom += 0.1f;
+    }
+
+    public void zoomOut()
+    {
+        _camera.zoom -= 0.1f;
     }
 
     private void drawValidMoves()
