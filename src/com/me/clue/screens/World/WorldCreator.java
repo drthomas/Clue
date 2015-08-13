@@ -7,6 +7,7 @@ import com.me.clue.Enums;
 import com.me.clue.ai.Pathing;
 import com.me.clue.model.ComponentMatrix;
 import com.me.clue.model.GridComponent;
+import com.me.clue.model.Room;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,8 +22,11 @@ public class WorldCreator
     private FileHandle _handle;
     private char[][] _lines;
     private ComponentMatrix _componentMatrix;
+    private ArrayList<Room> _rooms = new ArrayList<Room>() { };
 
     private int rows, cols;
+
+    public ArrayList<Room> getRooms() { return _rooms; }
 
     public WorldCreator() {}
 
@@ -172,7 +176,7 @@ public class WorldCreator
                             break;
                     }
 
-                    for (GridComponent roomComponent : getRoom(component))
+                    for (GridComponent roomComponent : createRoom(component))
                     {
                         if (roomComponent.getContentCode() == Enums.GridContent.Room)
                         {
@@ -204,7 +208,7 @@ public class WorldCreator
         }
     }
 
-    public ArrayList<GridComponent> getRoom(GridComponent door)
+    public ArrayList<GridComponent> createRoom(GridComponent door)
     {
         ArrayList<GridComponent> currentOpenSquares = new ArrayList<GridComponent>() { };
         ArrayList<GridComponent> nextOpenMoves = new ArrayList<GridComponent>() { };
@@ -242,6 +246,11 @@ public class WorldCreator
             room.addAll(currentOpenSquares);
             nextOpenMoves.clear();
         }
+
+        Room r = new Room();
+        r.setRoomName(door.getLocationName());
+        r.setRoom(room);
+        _rooms.add(r);
 
         return room;
     }

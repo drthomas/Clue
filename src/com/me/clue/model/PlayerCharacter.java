@@ -1,15 +1,12 @@
 package com.me.clue.model;
 
-import com.badlogic.gdx.Game;
 import com.me.clue.Enums;
 import com.me.clue.ai.Pathing;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-/**
- * Created by David on 7/22/2015.
- */
+
 public class PlayerCharacter extends BCharacter
 {
     //private Timer _timer = new Timer(100);

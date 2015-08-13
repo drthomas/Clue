@@ -13,6 +13,7 @@ import com.me.clue.Enums;
 import com.me.clue.carddata.Cards;
 import com.me.clue.huds.WorldHUD;
 import com.me.clue.screens.World.WorldCreator;
+import com.me.clue.screens.World.WorldScreen;
 
 import java.util.ArrayList;
 
@@ -26,8 +27,6 @@ public class World
     private WorldCreator _worldCreator = new WorldCreator();
     private BCharacter _currentPlayer = new BCharacter("");
     private BCharacter _nextPlayer = new BCharacter("");
-
-    private WorldHUD _hud;
 
     private Stage _stage;
 
@@ -71,8 +70,6 @@ public class World
 
     private void initialize()
     {
-        _hud = new WorldHUD(this);
-
         _tiledMap = new TmxMapLoader().load("images/ClueTileSheet.tmx");
         _mapProperties = _tiledMap.getProperties();
 
@@ -94,7 +91,6 @@ public class World
 
         createPlayers();
         dealCards();
-        createStage();
     }
 
     public void run()
@@ -166,12 +162,17 @@ public class World
         _deck.deal(_playerList);
     }
 
-    private void createStage()
+    public void createHUDStage(WorldHUD hud)
     {
-        for(Actor actor : _hud.getStage().getActors().toArray())
+        for(Actor actor : hud.getStage().getActors().toArray())
         {
             _stage.addActor(actor);
         }
+    }
+
+    public void createWorldStage()
+    {
+
     }
 
     public void nextPlayer()
@@ -209,14 +210,14 @@ public class World
         }
     }
 
-    public void roll()
+    public void roll(int rollAmount)
     {
-        _currentPlayer.setMoveAmount(_hud.getRoll().getAmount());
+        _currentPlayer.setMoveAmount(rollAmount);
 
         if (_currentPlayer instanceof PlayerCharacter)
         {
             PlayerCharacter tempPlayer = (PlayerCharacter)_currentPlayer;
-            /*ArrayList<GridComponent> validMoves = */tempPlayer.FindMoves(_componentMatrix.getMatrix());
+            tempPlayer.FindMoves(_componentMatrix.getMatrix());
         }
     }
 
@@ -225,6 +226,10 @@ public class World
         _tiledMapRenderer.setView(camera);
         _tiledMapRenderer.render();
 
+    }
+
+    public void drawPlayers(OrthographicCamera camera)
+    {
         _spriteBatch.setProjectionMatrix(camera.combined);
         _spriteBatch.begin();
 
@@ -245,6 +250,6 @@ public class World
 
     public void update()
     {
-        _hud.update();
+
     }
 }

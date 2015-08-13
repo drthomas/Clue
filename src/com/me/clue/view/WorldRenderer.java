@@ -20,6 +20,7 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.me.clue.Clue;
 import com.me.clue.Enums;
 import com.me.clue.controller.WorldController;
+import com.me.clue.model.BCharacter;
 import com.me.clue.model.ComponentMatrix;
 import com.me.clue.model.GridComponent;
 import com.me.clue.model.World;
@@ -32,6 +33,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class WorldRenderer
 {
+    //region Fields
     public static final float CAMERA_WIDTH = 800f;
     public static final float CAMERA_HEIGHT = 400f;
 
@@ -49,19 +51,12 @@ public class WorldRenderer
     private int _height;
     private float ppuX;	// pixels per unit on the X axis
     private float ppuY;	// pixels per unit on the Y axis
+    //endregion
 
-    /**Debug Fields**/
-    private ComponentMatrix _componenentMatrix;
-
+    //region Properties
     public OrthographicCamera getCamera() { return _camera; }
+    //endregion
 
-    public void setSize (int w, int h)
-    {
-        _width = w;
-        _height = h;
-        ppuX = (float)_width / CAMERA_WIDTH;
-        ppuY = (float)_height / CAMERA_HEIGHT;
-    }
 
     public WorldRenderer(World world, boolean debug)
     {
@@ -89,15 +84,17 @@ public class WorldRenderer
 
     public void resetPosition()
     {
-        Vector2 cameraStart = new Vector2(
-                _world.getCurrentPlayer().getCurrentNode().getPosition().x -
-                        (_world.getCurrentPlayer().getCurrentNode().getWidth() / 2),
-                _world.getCurrentPlayer().getCurrentNode().getPosition().y -
-                        (_world.getCurrentPlayer().getCurrentNode().getHeight() / 2));
-
-        _camera.position.set(cameraStart.x, cameraStart.y, 0);
+        _camera.position.set(_world.getWorldCreator().getStartingPosition().getPosition().x -
+                            (_world.getWorldCreator().getStartingPosition().getWidth() / 2),
+                            _world.getWorldCreator().getStartingPosition().getPosition().y -
+                            (_world.getWorldCreator().getStartingPosition().getHeight() / 2), 0);
     }
 
+    public void moveCameraToPlayer(BCharacter player)
+    {
+        _camera.position.set(player.getCurrentNode().getPosition().x - (player.getCurrentNode().getWidth() / 2),
+                        player.getCurrentNode().getPosition().y - (player.getCurrentNode().getHeight() / 2), 0);
+    }
 
     public void render()
     {
@@ -105,6 +102,7 @@ public class WorldRenderer
 
         _world.draw(_camera);
         drawValidMoves();
+        _world.drawPlayers(_camera);
         _world.drawHUD();
 
         if (_debug)
@@ -141,7 +139,7 @@ public class WorldRenderer
             float x1 = component.getPosition().x;
             float y1 = component.getPosition().y;
 
-            debugRenderer.setColor(new Color(0.1412f, 0.6196f, 0.2471f, 0.8f));
+            debugRenderer.setColor(new Color(0.1412f, 0.6196f, 0.2471f, 0.6f));
 
             debugRenderer.rect(x1, y1, -rect.width, -rect.height);
         }
@@ -151,7 +149,7 @@ public class WorldRenderer
 
     private void drawDebug()
     {
-        _componenentMatrix = _world.getComponentMatrix();
+
 
         debugRenderer.setProjectionMatrix(_camera.combined);
         debugRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -160,7 +158,7 @@ public class WorldRenderer
         Gdx.gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 
         //Render matrix
-        for(GridComponent[] c : _componenentMatrix.getMatrix())
+        for(GridComponent[] c : _world.getComponentMatrix().getMatrix())
         {
             for(GridComponent component : c)
             {

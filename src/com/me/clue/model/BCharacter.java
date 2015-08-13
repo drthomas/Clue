@@ -16,7 +16,6 @@ import java.util.ArrayList;
 public class BCharacter
 {
     private String                              _character;
-    protected String                            _currentLocation;  //Name of location, i.e. a room name,
     private boolean                             _inGame;
     protected boolean                           _inRoom;
     protected boolean                           _toggleRoomEntry;
@@ -91,7 +90,6 @@ public class BCharacter
     private void initialize()
     {
         _character = "";
-        _currentLocation = "";
         _inGame = true;
         _inRoom = false;
         _toggleRoomEntry = false;
@@ -147,7 +145,7 @@ public class BCharacter
                 for (GridComponent node : n)
                 {
                     if (_inRoom && node.getContentCode() == GridContent.Door
-                            && node.getLocationName().equalsIgnoreCase(_currentLocation))
+                            && node.getLocationName().equalsIgnoreCase(_currentNode.getLocationName()))
                     {
                         for (GridComponent tempNode : Pathing.FindValidMoves(node, _moveAmount))
                         {
@@ -186,7 +184,6 @@ public class BCharacter
         _xIndex = component.getXIndex();
         _yIndex = component.getYIndex();
         _currentNode = component;
-        _currentLocation = component.getLocationName();
     }
 
     public void Reset()

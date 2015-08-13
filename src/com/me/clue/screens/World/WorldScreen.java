@@ -17,8 +17,11 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.me.clue.Clue;
 import com.me.clue.Enums;
 import com.me.clue.controller.WorldController;
+import com.me.clue.huds.WorldHUD;
 import com.me.clue.model.BCharacter;
 import com.me.clue.model.GridComponent;
+import com.me.clue.model.PlayerCharacter;
+import com.me.clue.model.Room;
 import com.me.clue.model.SelectedCharacter;
 import com.me.clue.model.World;
 import com.me.clue.view.WorldRenderer;
@@ -30,12 +33,10 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class WorldScreen implements Screen, GestureListener, InputProcessor
 {
-    private Vector3 _touchDown;
-    private Vector3 _touchUp;
-
     private World           _world;
     private WorldRenderer   _renderer;
     private WorldController _controller;
+    private WorldHUD        _hud;
 
     private Stage           _stage;
     private Clue            _game;
@@ -45,9 +46,8 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     private boolean _dragging = false;
 
     private ArrayList<SelectedCharacter> _selectedPlayers = new  ArrayList<SelectedCharacter>() { };
-    private ArrayList<BCharacter> _playerList = new ArrayList<BCharacter>() { };
 
-    public void setSelectedPlayer( ArrayList<SelectedCharacter> list) { _selectedPlayers = list; }
+    public void setSelectedPlayers(ArrayList<SelectedCharacter> list) { _selectedPlayers = list; }
 
     public WorldScreen(Clue game)
     {
@@ -64,6 +64,7 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
         _world = new World(_stage);
         _renderer = new WorldRenderer(_world, false);
         _controller = new WorldController(_world);
+        _hud = new WorldHUD(_world);
     }
 
     @Override
@@ -76,15 +77,15 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
         im.addProcessor(_world.getStage());
         im.addProcessor(gd);
         im.addProcessor(this);
-
+        Gdx.input.setInputProcessor(im);
 
         _renderer.getCamera().position.x = 0;
         _renderer.getCamera().position.y = 0;
 
-       Gdx.input.setInputProcessor(im);
-
         _world.setSelectedPlayers(_selectedPlayers);
 
+        _world.createWorldStage();
+        _world.createHUDStage(_hud);
         _world.start();
         _renderer.resetPosition();
 
@@ -99,6 +100,11 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
         _world.update();
+        _hud.update();
+        if(_hud.nextPlayerPressed())
+        {
+            _renderer.moveCameraToPlayer(_world.getCurrentPlayer());
+        }
 
         _controller.update(_renderer.getCamera());
         _renderer.render();
@@ -188,7 +194,7 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
 
         if(_dragging)
         {
-            GridComponent clickedComponent = null;
+            GridComponent draggedComponent = null;
 
             for (GridComponent[] c : _world.getComponentMatrix().getMatrix())
             {
@@ -199,19 +205,31 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
                             component.getPosition().y > touchPos.y &&
                             component.getPosition().y <= touchPos.y + component.getHeight())
                     {
-                        clickedComponent = component;
+                        draggedComponent = component;
                         break;
                     }
                 }
             }
 
-            if (clickedComponent != null)
+            if (draggedComponent != null)
             {
-                //TODO Can only move with the valid moves
+                for(GridComponent component : _world.getCurrentPlayer().getValidMoves())
+                {
+                    if(draggedComponent == component)
+                    {
+                        _world.getCurrentPlayer().setCurrentNode(draggedComponent);
+                        _world.getCurrentPlayer().setStart(draggedComponent.getContentCode() == Enums.GridContent.Start);
+                        _world.getCurrentPlayer().setInRoom(draggedComponent.getContentCode() == Enums.GridContent.Room);
+                    }
+                }
+            }
 
-                _world.getCurrentPlayer().setCurrentNode(clickedComponent);
-                _world.getCurrentPlayer().setStart(clickedComponent.getContentCode() == Enums.GridContent.Start);
-                _world.getCurrentPlayer().setInRoom(clickedComponent.getContentCode() == Enums.GridContent.Room);
+            if(_world.getCurrentPlayer().inRoom())
+            {
+                for(Room room : _world.getWorldCreator().getRooms())
+                {
+
+                }
             }
         }
 
@@ -345,7 +363,7 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button)
     {
-        Gdx.app.log("World Screen", "InputProcessor touchUp called");
+        //Gdx.app.log("World Screen", "InputProcessor touchUp called");
 
         _panning = false;
         _dragging = false;

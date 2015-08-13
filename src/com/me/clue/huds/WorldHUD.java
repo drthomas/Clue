@@ -49,19 +49,24 @@ public class WorldHUD
         _stage.addActor(_btnNextPlayer.getButton());
     }
 
-    public void update()
+    public boolean nextPlayerPressed()
     {
         if(_btnNextPlayer.isPressed())
         {
             _world.nextPlayer();
             _btnNextPlayer.setPressed(false);
+            return true;
         }
 
+        return false;
+    }
+
+    public void update()
+    {
         if(_btnRoll.isPressed())
         {
             _btnRoll.setPressed(false);
-            _world.roll();
-
+            _world.roll(_btnRoll.getAmount());
         }
     }
 }

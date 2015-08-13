@@ -52,6 +52,6 @@ public class NPC extends BCharacter
 
     public boolean Question(String characterCard, String weaponCard, ArrayList<String> solution)
     {
-        return Choice.Ask(characterCard, _currentLocation, weaponCard, solution);
+        return Choice.Ask(characterCard, _currentNode.getLocationName(), weaponCard, solution);
     }
 }

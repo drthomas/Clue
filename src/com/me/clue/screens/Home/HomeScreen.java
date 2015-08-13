@@ -39,7 +39,7 @@ public class HomeScreen implements Screen
 
     private void changeScreen()
     {
-        _worldScreen.setSelectedPlayer(_home.getSelectedPlayers());
+        _worldScreen.setSelectedPlayers(_home.getSelectedPlayers());
         _game.setScreen(_worldScreen);
     }
 
