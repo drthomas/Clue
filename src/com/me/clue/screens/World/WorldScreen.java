@@ -41,7 +41,7 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     private Stage           _stage;
     private Clue            _game;
 
-    public float initialScale = 1.0f;
+    private float initialScale = 1.0f;
     private boolean _panning = false;
     private boolean _dragging = false;
 
@@ -146,6 +146,7 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     {
         //Gdx.app.log("World Screen", "GestureListener touchDown called");
 
+
         return false;
     }
 
@@ -153,6 +154,34 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     public boolean tap(float x, float y, int count, int button)
     {
         //Gdx.app.log("World Screen", "GestureListener tap called");
+
+        Vector3 touchPos = new Vector3(x, y, 0);
+        _renderer.getCamera().unproject(touchPos);
+
+        GridComponent touched = null;
+
+        for (GridComponent[] c : _world.getComponentMatrix().getMatrix())
+        {
+            for (GridComponent component : c)
+            {
+                if (component.getPosition().x > touchPos.x &&
+                        component.getPosition().x <= touchPos.x + component.getWidth() &&
+                        component.getPosition().y > touchPos.y &&
+                        component.getPosition().y <= touchPos.y + component.getHeight())
+                {
+                    touched = component;
+                    break;
+                }
+            }
+        }
+
+        if (touched != null && _world.getCurrentPlayer().getValidMoves().contains(touched))
+        {
+            _world.getCurrentPlayer().setCurrentNode(touched);
+            _world.getCurrentPlayer().setStart(touched.getContentCode() == Enums.GridContent.Start);
+            _world.getCurrentPlayer().setInRoom(touched.getContentCode() == Enums.GridContent.Room);
+        }
+
         return false;
     }
 
@@ -213,15 +242,12 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
 
             if (draggedComponent != null)
             {
-                for(GridComponent component : _world.getCurrentPlayer().getValidMoves())
-                {
-                    if(draggedComponent == component)
+                if(_world.getCurrentPlayer().getValidMoves().contains(draggedComponent))
                     {
                         _world.getCurrentPlayer().setCurrentNode(draggedComponent);
                         _world.getCurrentPlayer().setStart(draggedComponent.getContentCode() == Enums.GridContent.Start);
                         _world.getCurrentPlayer().setInRoom(draggedComponent.getContentCode() == Enums.GridContent.Room);
                     }
-                }
             }
 
             if(_world.getCurrentPlayer().inRoom())
@@ -232,7 +258,6 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
                 }
             }
         }
-
         return true;
     }
 
@@ -327,10 +352,13 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button)
     {
-        //Gdx.app.log("World Screen", "InputProcessor touchDown called");
+        Gdx.app.log("World Screen", "InputProcessor touchDown called");
 
         /*Gdx.app.log("World Screen", "Screen: (" + Gdx.graphics.getWidth() +
                 ", " +  Gdx.graphics.getHeight() + ")");*/
+
+        Vector3 touchPos = new Vector3(screenX, screenY, 0);
+        _renderer.getCamera().unproject(touchPos);
 
         initialScale = _renderer.getCamera().zoom;
 
@@ -363,7 +391,7 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button)
     {
-        //Gdx.app.log("World Screen", "InputProcessor touchUp called");
+        Gdx.app.log("World Screen", "InputProcessor touchUp called");
 
         _panning = false;
         _dragging = false;

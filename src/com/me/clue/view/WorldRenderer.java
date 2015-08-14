@@ -128,10 +128,13 @@ public class WorldRenderer
     private void drawValidMoves()
     {
         debugRenderer.setProjectionMatrix(_camera.combined);
-        debugRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        debugRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+        float lineWidth = (0.008f * Gdx.graphics.getWidth());
 
         Gdx.gl.glEnable(GL10.GL_BLEND);
         Gdx.gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+        Gdx.gl.glLineWidth(lineWidth / _camera.zoom);
 
         for(GridComponent component : _world.getCurrentPlayer().getValidMoves())
         {
@@ -139,7 +142,7 @@ public class WorldRenderer
             float x1 = component.getPosition().x;
             float y1 = component.getPosition().y;
 
-            debugRenderer.setColor(new Color(0.1412f, 0.6196f, 0.2471f, 0.6f));
+            debugRenderer.setColor(new Color(0.1412f, 0.6196f, 0.2471f, 1f));
 
             debugRenderer.rect(x1, y1, -rect.width, -rect.height);
         }
@@ -149,8 +152,6 @@ public class WorldRenderer
 
     private void drawDebug()
     {
-
-
         debugRenderer.setProjectionMatrix(_camera.combined);
         debugRenderer.begin(ShapeRenderer.ShapeType.Filled);
 

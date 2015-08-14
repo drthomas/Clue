@@ -144,34 +144,34 @@ public class WorldCreator
                 {
                     switch (component.getID())
                     {
-                        case 598:
+                        case 654:
                             component.setLocationName("Shower");
                             break;
-                        case 645:
+                        case 705:
                             component.setLocationName("Pool");
                             break;
-                        case 850:
-                        case 892:
                         case 976:
+                        case 1022:
+                        case 1114:
                             component.setLocationName("Master Bedroom");
                             break;
-                        case 907:
-                        case 949:
+                        case 1039:
+                        case 1085:
                             component.setLocationName("Kitchen");
                             break;
-                        case 1269:
+                        case 1481:
                             component.setLocationName("Spare Bedroom");
                             break;
-                        case 1310:
+                        case 1572:
                             component.setLocationName("Bathroom");
                             break;
-                        case 1437:
+                        case 1757:
                             component.setLocationName("Office");
                             break;
-                        case 1529:
+                        case 1858:
                             component.setLocationName("Foyer");
                             break;
-                        case 1200:
+                        case 1406:
                             component.setLocationName("Garage");
                             break;
                     }
