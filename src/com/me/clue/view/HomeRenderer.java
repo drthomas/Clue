@@ -1,5 +1,6 @@
 package com.me.clue.view;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -11,8 +12,12 @@ public class HomeRenderer
     private static final float CAMERA_WIDTH = 800f;
     private static final float CAMERA_HEIGHT = 480f;
 
+    private float scale = CAMERA_WIDTH / Gdx.graphics.getWidth();
+
     private Home _home;
-    private OrthographicCamera _cam;
+    private OrthographicCamera _camera;
+    private OrthographicCamera _secondaryCamera;
+
 
     /** for debug rendering **/
     ShapeRenderer _debugRenderer = new ShapeRenderer();
@@ -37,9 +42,17 @@ public class HomeRenderer
     public HomeRenderer(Home home, boolean debug)
     {
         _home = home;
-        _cam = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
-        _cam.position.set(CAMERA_WIDTH / 2f, CAMERA_HEIGHT / 2f, 0);
-        _cam.update();
+        _camera = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
+        _camera.position.set(CAMERA_WIDTH / 2f, CAMERA_HEIGHT / 2f, 0);
+        _camera.update();
+
+        Gdx.app.log("Home Renderer", "Scale: " + scale);
+
+        _secondaryCamera = new OrthographicCamera(Gdx.graphics.getWidth() * scale,
+                                                    Gdx.graphics.getHeight() * scale);
+        _secondaryCamera.position.set(CAMERA_WIDTH / 2f, CAMERA_HEIGHT / 2f, 0);
+        _secondaryCamera.update();
+
         _debug = debug;
         _spriteBatch = new SpriteBatch();
     }
@@ -47,29 +60,28 @@ public class HomeRenderer
     public void render()
     {
         _spriteBatch.begin();
-        drawBlocks();
-        drawBob();
-        _home.draw();
+        _home.draw(_secondaryCamera);
         _spriteBatch.end();
+
         if (_debug)
             drawDebug();
     }
 
-    private void drawBlocks()
-    {
-
-    }
-
-    private void drawBob()
-    {
-    }
-
     private void drawDebug()
     {
-        _debugRenderer.setProjectionMatrix(_cam.combined);
+        _debugRenderer.setProjectionMatrix(_camera.combined);
         _debugRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-
         _debugRenderer.end();
+    }
+
+    public void update()
+    {
+        scale = CAMERA_WIDTH / Gdx.graphics.getWidth();
+
+        _secondaryCamera.translate(Gdx.graphics.getWidth() * scale,
+                                    Gdx.graphics.getHeight() * scale);
+        _secondaryCamera.position.set(CAMERA_WIDTH / 2f, CAMERA_HEIGHT / 2f, 0);
+        _secondaryCamera.update();
     }
 }

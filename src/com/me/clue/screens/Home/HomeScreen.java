@@ -69,6 +69,8 @@ public class HomeScreen implements Screen
     {
         _renderer.setSize(width, height);
         _stage.getViewport().update(width, height);
+
+        _renderer.update();
     }
 
     @Override

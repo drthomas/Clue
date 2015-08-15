@@ -13,6 +13,12 @@ public class NPC extends BCharacter
     private int _currentPathIndex = 0;   //Current index on a path
     private GridComponent _currentGoal = new GridComponent();
 
+    public int getCurrentPathIndex() { return _currentPathIndex; }
+    public void setCurrentPathIndex(int index) { _currentPathIndex = index; }
+
+    public GridComponent getCurreontGoal() { return _currentGoal; }
+    public void setCurrentGoal(GridComponent goal) { _currentGoal = goal; }
+
     public NPC(String name)
     {
         super(name);

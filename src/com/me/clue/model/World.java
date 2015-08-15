@@ -1,5 +1,6 @@
 package com.me.clue.model;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapProperties;
@@ -10,10 +11,12 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.me.clue.Enums;
+import com.me.clue.ai.Pathing;
 import com.me.clue.carddata.Cards;
 import com.me.clue.huds.WorldHUD;
 import com.me.clue.screens.World.WorldCreator;
 import com.me.clue.screens.World.WorldScreen;
+import com.me.clue.view.WorldRenderer;
 
 import java.util.ArrayList;
 
@@ -115,7 +118,7 @@ public class World
                 if(true)
                 {
                     //TODO Differentiate between NPC and PlayerCharacter
-                    temp = new PlayerCharacter(character.getName());
+                    temp = new NPC(character.getName());
                 }
                 else
                 {
@@ -214,6 +217,38 @@ public class World
     {
         _currentPlayer.setMoveAmount(rollAmount);
 
+        if(_currentPlayer instanceof NPC)
+        {
+            NPC tempPlayer = (NPC)_currentPlayer;
+
+            /*if (tempPlayer.getCurrentNode().getContentCode() == Enums.GridContent.Start)
+            {
+                FindPath();
+            }*/
+
+            FindPath();
+            //Move();
+
+
+            //TODO Determine if this AI wants to continue on the current path using known cards or random selection
+            //      If so, automove on a roll.
+            //      else, find a new path on a roll.
+
+            /*if (tempPlayer.WantNewPath())
+            {
+                tempPlayer.getCurrentPath().clear();
+            }
+
+            if (tempPlayer.getCurrentPath().size() > 0) //Keep Moving along the current path
+            {
+                //btnMove.Enabled = true;
+            }
+            else  //Find a new path
+            {
+                //FindPath();
+                //btnMove.Enabled = true;
+            }*/
+        }
         if (_currentPlayer instanceof PlayerCharacter)
         {
             PlayerCharacter tempPlayer = (PlayerCharacter)_currentPlayer;
@@ -221,11 +256,158 @@ public class World
         }
     }
 
-    public void draw(OrthographicCamera camera)
+    private void FindPath()
+    {
+        NPC tempPlayer = (NPC)_currentPlayer;
+        ArrayList<GridComponent> currentPath;
+        ArrayList<GridComponent> finalPath = null;
+        ArrayList<GridComponent> goals = new ArrayList<GridComponent>() { };
+
+        //Resets the paths
+        tempPlayer.setCurrentPathIndex(0);
+
+        for (GridComponent[] c : _componentMatrix.getMatrix())
+        {
+            for(GridComponent component : c)
+            {
+                if (component.isPath())
+                {
+                    component.setFilled(false);
+                    component.setIsPath(false);
+                    component.setOpen(true);
+                }
+            }
+        }
+
+        //Find all goals
+        for (GridComponent[] c : _componentMatrix.getMatrix())
+        {
+            for(GridComponent component : c)
+            {
+                if (component.getContentCode() == Enums.GridContent.Door)
+                {
+                    goals.add(component);
+                }
+            }
+        }
+
+        //Finds all possible paths
+        for (GridComponent goalNode : goals)
+        {
+            currentPath = tempPlayer.FindPath(_componentMatrix.getMatrix(), tempPlayer.getCurrentNode(), goalNode);
+            if (currentPath != null)
+            {
+                tempPlayer.getPossiblePaths().add(currentPath);
+            }
+        }
+
+        //Finds the shortest path if one exists
+        //if (tempPlayer.PossiblePaths.Count > 0)
+        //{
+        //    finalPath = CurrentPlayer.BestPath(CurrentPlayer.PossiblePaths);
+        //}
+        //else
+        //{
+        //    Console.WriteLine("No Path Found");
+        //}
+
+        //tempPlayer.CurrentPath.Clear();
+        //if (finalPath != null)
+        //{
+        //    tempPlayer.CurrentPath = finalPath;
+        //}
+
+
+        //Find a random path
+        if (tempPlayer.getPossiblePaths().size() > 0)
+        {
+            finalPath = Pathing.AStar(_componentMatrix.getMatrix(),
+                                    tempPlayer.getCurrentNode(),
+                                    tempPlayer.ChooseRandomUnknownGoal(goals));
+        }
+        else
+        {
+            Gdx.app.log("World", "No possible paths found");
+        }
+
+        if (finalPath != null)
+        {
+            tempPlayer.setCurrentPath(finalPath);
+            tempPlayer.setCurrentGoal(finalPath.get(finalPath.size() - 1));
+        }
+
+        //Sets the components in the CurrentPath for drawing
+        if (tempPlayer.getCurrentPath() != null)
+        {
+            for (GridComponent component : tempPlayer.getCurrentPath())
+            {
+                component.setIsPath(true);
+            }
+        }
+    }
+
+    public void Move()
+    {
+        if (_currentPlayer instanceof NPC)
+        {
+            //TODO This should be its own function in NPC
+
+            NPC tempPlayer = (NPC)_currentPlayer;
+            if (tempPlayer.getCurrentPath().size() > 0)
+            {
+                if ((tempPlayer.getCurrentPathIndex() + tempPlayer.getMoveAmount()) <
+                        (tempPlayer.getCurrentPath().size()))
+                {
+                    tempPlayer.setCurrentPathIndex(tempPlayer.getCurrentPathIndex() +
+                                                        tempPlayer.getMoveAmount());
+
+                    tempPlayer.Move(tempPlayer.getCurrentPath().get(tempPlayer.getCurrentPath().indexOf(tempPlayer.getCurrentPath().get(tempPlayer.getCurrentPathIndex()))));
+                }
+                else
+                {
+                    Gdx.app.log("World", "Question...");
+                    /*
+                    ArrayList<String> UnknownCharacters = new ArrayList<String>() { };
+                    String qCharacter = null;
+                    ArrayList<String> UnknownWeapons = new ArrayList<String>() { };
+                    String qWeapon = null;
+
+                    for(String item : _questionControl.CMBCharacter.Items)
+                    {
+                        if (tempPlayer.UnknownCards.Contains(item))
+                        {
+                            UnknownCharacters.Add(item);
+                        }
+                    }
+
+                    foreach (string item in _questionControl.CMBWeapon.Items)
+                    {
+                        if (tempPlayer.UnknownCards.Contains(item))
+                        {
+                            UnknownWeapons.Add(item);
+                        }
+                    }
+
+                    qCharacter = UnknownCharacters[rnd.Next(0, UnknownCharacters.Count - 1)];
+                    qWeapon = UnknownWeapons[rnd.Next(0, UnknownWeapons.Count - 1)];
+
+                    tempPlayer.Move(tempPlayer.CurrentPath[tempPlayer.CurrentPath.Count - 1]);
+
+                    bool ans = Question(qCharacter, tempPlayer.CurrentLocation, qWeapon);
+
+                    tempPlayer.CurrentPath.Clear();
+                    */
+                }
+            }
+
+            //btnMove.Enabled = false;
+        }
+    }
+
+    public void drawMap(OrthographicCamera camera)
     {
         _tiledMapRenderer.setView(camera);
         _tiledMapRenderer.render();
-
     }
 
     public void drawPlayers(OrthographicCamera camera)

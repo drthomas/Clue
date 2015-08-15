@@ -73,6 +73,12 @@ public class BCharacter
     public ArrayList<String> getUnknownCards() { return _unknownCards; }
     public void setUnknownCards(ArrayList<String> list) { _unknownCards = list; }
 
+    public ArrayList<ArrayList<GridComponent>> getPossiblePaths() { return _possiblePaths; }
+    public void setPossiblePaths(ArrayList<ArrayList<GridComponent>> list) { _possiblePaths = list; }
+
+    public ArrayList<GridComponent> getCurrentPath() { return _currentPath; }
+    public void setCurrentPath(ArrayList<GridComponent> list) { _currentPath = list; }
+
     public ArrayList<GridComponent> getValidMoves() { return _validMoves; }
     public void setValidMoves(ArrayList<GridComponent> list) { _validMoves = list; }
 

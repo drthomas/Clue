@@ -1,9 +1,12 @@
 package com.me.clue.model;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.me.clue.actors.home.buttons.Create;
 import com.me.clue.actors.home.checkboxes.PlayerCheckBox;
+import com.me.clue.view.WorldRenderer;
 
 import java.util.ArrayList;
 
@@ -78,9 +81,11 @@ public class Home
         _stage.addActor(_ckbWhite.getCheckBox());
     }
 
-
-    public void draw()
+    public void draw(OrthographicCamera camera)
     {
+        //_stage.getViewport().setCamera(camera);
+        //TODO Fix scaling issue
+
         _stage.draw();
     }
 

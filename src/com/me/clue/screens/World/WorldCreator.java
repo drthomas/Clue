@@ -3,6 +3,7 @@ package com.me.clue.screens.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.me.clue.Enums;
 import com.me.clue.ai.Pathing;
 import com.me.clue.model.ComponentMatrix;
@@ -13,7 +14,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-
 public class WorldCreator
 {
     private String _levelOneFile = "data/maps/TestMap.txt";
@@ -23,6 +23,7 @@ public class WorldCreator
     private char[][] _lines;
     private ComponentMatrix _componentMatrix;
     private ArrayList<Room> _rooms = new ArrayList<Room>() { };
+    private ArrayList<GridComponent> _doors = new ArrayList<GridComponent>() { };
 
     private int rows, cols;
 
@@ -175,14 +176,7 @@ public class WorldCreator
                             component.setLocationName("Garage");
                             break;
                     }
-
-                    for (GridComponent roomComponent : createRoom(component))
-                    {
-                        if (roomComponent.getContentCode() == Enums.GridContent.Room)
-                        {
-                            roomComponent.setLocationName(component.getLocationName());
-                        }
-                    }
+                    _doors.add(component);
                 }
                 else if (component.getContentCode() == Enums.GridContent.Empty)
                 {
@@ -206,6 +200,17 @@ public class WorldCreator
                 }
             }
         }
+
+        for(GridComponent door : _doors)
+        {
+            for (GridComponent roomComponent : createRoom(door))
+            {
+                if (roomComponent.getContentCode() == Enums.GridContent.Room)
+                {
+                    roomComponent.setLocationName(door.getLocationName());
+                }
+            }
+        }
     }
 
     public ArrayList<GridComponent> createRoom(GridComponent door)
@@ -214,37 +219,51 @@ public class WorldCreator
         ArrayList<GridComponent> nextOpenMoves = new ArrayList<GridComponent>() { };
         ArrayList<GridComponent> room = new ArrayList<GridComponent>() { };
 
-        door.setMoveAmount(0);
+        int doorCount = 0;
 
-        currentOpenSquares.add(door);
-
-        while(true)
+        for(GridComponent d : _doors)
         {
-            if (currentOpenSquares.size() == 0)
+            if(d.getLocationName().equalsIgnoreCase(door.getLocationName()))
             {
-                break;
+                doorCount++;
             }
-            for (GridComponent component : currentOpenSquares)
+        }
+
+        //Idnore dupplicate doors
+        if(doorCount == 1)
+        {
+            door.setMoveAmount(0);
+
+            currentOpenSquares.add(door);
+
+            while (true)
             {
-                for (GridComponent surroundingComponent : component.getSurroundingNodes())
+                if (currentOpenSquares.size() == 0)
                 {
-                    if (!nextOpenMoves.contains(surroundingComponent))
+                    break;
+                }
+                for (GridComponent component : currentOpenSquares)
+                {
+                    for (GridComponent surroundingComponent : component.getSurroundingNodes())
                     {
-                        nextOpenMoves.add(surroundingComponent);
+                        if (!nextOpenMoves.contains(surroundingComponent))
+                        {
+                            nextOpenMoves.add(surroundingComponent);
+                        }
                     }
                 }
-            }
-            currentOpenSquares.clear();
+                currentOpenSquares.clear();
 
-            for (GridComponent component : nextOpenMoves)
-            {
-                if (component.getContentCode() == Enums.GridContent.Room && !room.contains(component))
+                for (GridComponent component : nextOpenMoves)
                 {
-                    currentOpenSquares.add(component);
+                    if (component.getContentCode() == Enums.GridContent.Room && !room.contains(component))
+                    {
+                        currentOpenSquares.add(component);
+                    }
                 }
+                room.addAll(currentOpenSquares);
+                nextOpenMoves.clear();
             }
-            room.addAll(currentOpenSquares);
-            nextOpenMoves.clear();
         }
 
         Room r = new Room();

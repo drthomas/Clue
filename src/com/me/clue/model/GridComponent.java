@@ -147,41 +147,35 @@ public class GridComponent
 
     public void fromChar(char charIn)
     {
-        // Use a switch statement to parse characters.
         switch (Character.toLowerCase(charIn))
         {
             case 'w':
                 _contentCode = Enums.GridContent.Wall;
                 _open = false;
-                _filled = true;
                 break;
             case 'g':
                 _contentCode = Enums.GridContent.Hero;
                 _open = false;
-                _filled = true;
                 break;
             case 'm':
                 _contentCode = Enums.GridContent.Monster;
                 _open = false;
-                _filled = true;
                 break;
             case 'r':
                 _contentCode = Enums.GridContent.Room;
                 _open = false;
-                _filled = true;
                 break;
             case 'd':
                 _contentCode = Enums.GridContent.Door;
                 _open = true;
-                _filled = true;
                 break;
             case 's':
                 _contentCode = Enums.GridContent.Start;
                 _open = true;
-                _filled = true;
                 break;
             case ' ':
                 _contentCode = Enums.GridContent.Empty;
+                _open = true;
                 break;
             default:
                 break;

@@ -6,9 +6,6 @@ import com.me.clue.model.GridComponent;
 import java.util.ArrayList;
 import java.util.Random;
 
-/**
- * Created by David on 7/22/2015.
- */
 public class Choice
 {
 

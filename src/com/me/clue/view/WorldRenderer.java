@@ -1,32 +1,21 @@
 package com.me.clue.view;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.me.clue.Clue;
 import com.me.clue.Enums;
-import com.me.clue.controller.WorldController;
 import com.me.clue.model.BCharacter;
-import com.me.clue.model.ComponentMatrix;
 import com.me.clue.model.GridComponent;
+import com.me.clue.model.NPC;
 import com.me.clue.model.World;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -39,7 +28,7 @@ public class WorldRenderer
 
     private World _world;
 
-    private ShapeRenderer debugRenderer = new ShapeRenderer();
+    private ShapeRenderer _shapeRenderer = new ShapeRenderer();
     private SpriteBatch _debugBatch;
     private BitmapFont _debugFont;
 
@@ -85,28 +74,15 @@ public class WorldRenderer
     public void resetPosition()
     {
         _camera.position.set(_world.getWorldCreator().getStartingPosition().getPosition().x -
-                            (_world.getWorldCreator().getStartingPosition().getWidth() / 2),
-                            _world.getWorldCreator().getStartingPosition().getPosition().y -
-                            (_world.getWorldCreator().getStartingPosition().getHeight() / 2), 0);
+                        (_world.getWorldCreator().getStartingPosition().getWidth() / 2),
+                _world.getWorldCreator().getStartingPosition().getPosition().y -
+                        (_world.getWorldCreator().getStartingPosition().getHeight() / 2), 0);
     }
 
     public void moveCameraToPlayer(BCharacter player)
     {
         _camera.position.set(player.getCurrentNode().getPosition().x - (player.getCurrentNode().getWidth() / 2),
-                        player.getCurrentNode().getPosition().y - (player.getCurrentNode().getHeight() / 2), 0);
-    }
-
-    public void render()
-    {
-        _camera.update();
-
-        _world.draw(_camera);
-        drawValidMoves();
-        _world.drawPlayers(_camera);
-        _world.drawHUD();
-
-        if (_debug)
-            drawDebug();
+                player.getCurrentNode().getPosition().y - (player.getCurrentNode().getHeight() / 2), 0);
     }
 
     public void resize(int width, int height)
@@ -125,10 +101,29 @@ public class WorldRenderer
         _camera.zoom -= 0.1f;
     }
 
+    //region Drawing
+    public void render()
+    {
+        _camera.update();
+
+        _world.drawMap(_camera);
+        drawValidMoves();
+        if(_world.getCurrentPlayer() instanceof NPC)
+        {
+            drawPath(_world.getCurrentPlayer().getCurrentPath());
+        }
+
+        _world.drawPlayers(_camera);
+        _world.drawHUD();
+
+        if (_debug)
+            drawDebug();
+    }
+
     private void drawValidMoves()
     {
-        debugRenderer.setProjectionMatrix(_camera.combined);
-        debugRenderer.begin(ShapeRenderer.ShapeType.Line);
+        _shapeRenderer.setProjectionMatrix(_camera.combined);
+        _shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
         float lineWidth = (0.008f * Gdx.graphics.getWidth());
 
@@ -142,18 +137,45 @@ public class WorldRenderer
             float x1 = component.getPosition().x;
             float y1 = component.getPosition().y;
 
-            debugRenderer.setColor(new Color(0.1412f, 0.6196f, 0.2471f, 1f));
+            _shapeRenderer.setColor(new Color(0.1412f, 0.6196f, 0.2471f, 1f));
 
-            debugRenderer.rect(x1, y1, -rect.width, -rect.height);
+            _shapeRenderer.rect(x1, y1, -rect.width, -rect.height);
         }
 
-        debugRenderer.end();
+        _shapeRenderer.end();
+    }
+
+    private void drawPath(ArrayList<GridComponent> path)
+    {
+        if(path != null && path.size() > 0)
+        {
+            _shapeRenderer.setProjectionMatrix(_camera.combined);
+            _shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+            float lineWidth = (0.005f * Gdx.graphics.getWidth());
+
+            Gdx.gl.glEnable(GL10.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+            Gdx.gl.glLineWidth(lineWidth / _camera.zoom);
+
+            for (int i = 0; i < path.size() - 1; i++)
+            {
+                Vector3 start = new Vector3(path.get(i).getPosition().x - (path.get(i).getWidth() / 2),
+                                path.get(i).getPosition().y - (path.get(i).getHeight() / 2), 0);
+                Vector3 end = new Vector3(path.get(i + 1).getPosition().x - (path.get(i + 1).getWidth() / 2),
+                        path.get(i + 1).getPosition().y - (path.get(i + 1).getHeight() / 2), 0);
+                _shapeRenderer.setColor(0, 0, 0, 1);
+                _shapeRenderer.line(start, end);
+            }
+
+            _shapeRenderer.end();
+        }
     }
 
     private void drawDebug()
     {
-        debugRenderer.setProjectionMatrix(_camera.combined);
-        debugRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        _shapeRenderer.setProjectionMatrix(_camera.combined);
+        _shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         Gdx.gl.glEnable(GL10.GL_BLEND);
         Gdx.gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
@@ -168,20 +190,21 @@ public class WorldRenderer
                 float y1 = component.getPosition().y;
 
                 if(component.getContentCode() == Enums.GridContent.Empty)
-                    debugRenderer.setColor(new Color(0.9176f, 0.7490f, 0.4745f, 0.8f));
+                    _shapeRenderer.setColor(new Color(0.9176f, 0.7490f, 0.4745f, 0.8f));
                 else if(component.getContentCode() == Enums.GridContent.Room)
-                    debugRenderer.setColor(new Color(0.4078f, 0.1412f, 0, 0.8f));
+                    _shapeRenderer.setColor(new Color(0.4078f, 0.1412f, 0, 0.8f));
                 else if(component.getContentCode() == Enums.GridContent.Start)
-                    debugRenderer.setColor(new Color(1, 1, 1, 0.8f));
+                    _shapeRenderer.setColor(new Color(1, 1, 1, 0.8f));
                 else if(component.getContentCode() == Enums.GridContent.Door)
-                    debugRenderer.setColor(new Color(0.5882f, 0.1294f, 0.0863f, 0.8f));
+                    _shapeRenderer.setColor(new Color(0.5882f, 0.1294f, 0.0863f, 0.8f));
                 else if(component.getContentCode() == Enums.GridContent.Wall)
-                    debugRenderer.setColor(new Color(0.7176f, 0.5608f, 0.3216f, 0.8f));
+                    _shapeRenderer.setColor(new Color(0.7176f, 0.5608f, 0.3216f, 0.8f));
 
-                debugRenderer.rect(x1, y1, -rect.width, -rect.height);
+                _shapeRenderer.rect(x1, y1, -rect.width, -rect.height);
             }
         }
 
-        debugRenderer.end();
+        _shapeRenderer.end();
     }
+    //endregion
 }
