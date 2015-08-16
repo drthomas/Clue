@@ -3,7 +3,6 @@ package com.me.clue.screens.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.me.clue.Enums;
 import com.me.clue.ai.Pathing;
 import com.me.clue.model.ComponentMatrix;
@@ -42,6 +41,7 @@ public class WorldCreator
         fixPositions();
         assignSurroundingSquares();
         assignLocationNames();
+        newRooms();
 
         return _componentMatrix;
     }
@@ -200,96 +200,87 @@ public class WorldCreator
                 }
             }
         }
+    }
 
+    public void newRooms()
+    {
         for(GridComponent door : _doors)
         {
-            for (GridComponent roomComponent : createRoom(door))
+            door.setMoveAmount(0);
+            Room r = createRoom(door);
+
+            if(_rooms.size() == 0)
             {
-                if (roomComponent.getContentCode() == Enums.GridContent.Room)
+                _rooms.add(r);
+            }
+            else
+            {
+                Room tempRoom = null;
+
+                for (Room room : _rooms)
                 {
-                    roomComponent.setLocationName(door.getLocationName());
+                    if (r.getRoomName().equalsIgnoreCase(room.getRoomName()))
+                    {
+                        tempRoom = room;
+                        break;
+                    }
+                }
+
+                if (tempRoom != null)
+                {
+                    tempRoom.addDoor(door);
+                }
+                else
+                {
+                    _rooms.add(r);
                 }
             }
         }
     }
 
-    public ArrayList<GridComponent> createRoom(GridComponent door)
+    private Room createRoom(GridComponent door)
     {
         ArrayList<GridComponent> currentOpenSquares = new ArrayList<GridComponent>() { };
         ArrayList<GridComponent> nextOpenMoves = new ArrayList<GridComponent>() { };
-        ArrayList<GridComponent> room = new ArrayList<GridComponent>() { };
+        ArrayList<GridComponent> roomList = new ArrayList<GridComponent>() { };
 
-        int doorCount = 0;
+        currentOpenSquares.add(door);
 
-        for(GridComponent d : _doors)
+        while (true)
         {
-            if(d.getLocationName().equalsIgnoreCase(door.getLocationName()))
+            if (currentOpenSquares.size() == 0)
             {
-                doorCount++;
+                break;
             }
-        }
-
-        //Idnore dupplicate doors
-        if(doorCount == 1)
-        {
-            door.setMoveAmount(0);
-
-            currentOpenSquares.add(door);
-
-            while (true)
+            for (GridComponent component : currentOpenSquares)
             {
-                if (currentOpenSquares.size() == 0)
+                for (GridComponent surroundingComponent : component.getSurroundingNodes())
                 {
-                    break;
-                }
-                for (GridComponent component : currentOpenSquares)
-                {
-                    for (GridComponent surroundingComponent : component.getSurroundingNodes())
+                    if (!nextOpenMoves.contains(surroundingComponent))
                     {
-                        if (!nextOpenMoves.contains(surroundingComponent))
-                        {
-                            nextOpenMoves.add(surroundingComponent);
-                        }
+                        nextOpenMoves.add(surroundingComponent);
                     }
                 }
-                currentOpenSquares.clear();
-
-                for (GridComponent component : nextOpenMoves)
-                {
-                    if (component.getContentCode() == Enums.GridContent.Room && !room.contains(component))
-                    {
-                        currentOpenSquares.add(component);
-                    }
-                }
-                room.addAll(currentOpenSquares);
-                nextOpenMoves.clear();
             }
-        }
+            currentOpenSquares.clear();
 
+            for (GridComponent component : nextOpenMoves)
+            {
+                if (component.getContentCode() == Enums.GridContent.Room && !roomList.contains(component))
+                {
+                    currentOpenSquares.add(component);
+                }
+            }
+            roomList.addAll(currentOpenSquares);
+            nextOpenMoves.clear();
+        }
         Room r = new Room();
+        r.addDoor(door);
         r.setRoomName(door.getLocationName());
-        r.setRoom(room);
-        _rooms.add(r);
+        r.setRoom(roomList);
 
-        return room;
-    }
 
-    public Vector2 findCode(GridComponent[][] componentMatrix)
-    {
-        Vector2 p = new Vector2();
-        for(GridComponent[] c : componentMatrix)
-        {
-            for(GridComponent component : c)
-            {
-                if (component.getContentCode() == Enums.GridContent.Hero ||
-                        component.getContentCode() == Enums.GridContent.Monster)
-                {
-                    p.x = component.getXIndex();
-                    p.y = component.getYIndex();
-                }
-            }
-        }
-        return p;
+        return r;
     }
 
     public GridComponent getStartingPosition()
@@ -311,12 +302,6 @@ public class WorldCreator
         startPosition = startList.get(startList.size() / 2);
 
         return startPosition;
-    }
-
-    public boolean squareOpen(GridComponent[][] componentMatrix, int x, int y)
-    {
-        return componentMatrix[x][y].isOpen() ||
-                componentMatrix[x][y].getContentCode() == Enums.GridContent.Hero;
     }
 
     public char[][] readMapFile(FileHandle handle)

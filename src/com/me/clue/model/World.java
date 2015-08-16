@@ -226,7 +226,7 @@ public class World
                 FindPath();
             }*/
 
-            FindPath();
+            //FindPath();
             //Move();
 
 
@@ -248,6 +248,8 @@ public class World
                 //FindPath();
                 //btnMove.Enabled = true;
             }*/
+
+            tempPlayer.FindMoves(_componentMatrix.getMatrix());
         }
         if (_currentPlayer instanceof PlayerCharacter)
         {

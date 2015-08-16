@@ -16,4 +16,5 @@ public class Room
 
     public ArrayList<GridComponent> getDoors() { return _doors; }
     public void setDoors(ArrayList<GridComponent> list) { _doors = list; }
+    public void addDoor(GridComponent door) { _doors.add(door); }
 }
