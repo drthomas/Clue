@@ -41,7 +41,7 @@ public class WorldCreator
         fixPositions();
         assignSurroundingSquares();
         assignLocationNames();
-        newRooms();
+        createRooms();
 
         return _componentMatrix;
     }
@@ -202,12 +202,12 @@ public class WorldCreator
         }
     }
 
-    public void newRooms()
+    public void createRooms()
     {
         for(GridComponent door : _doors)
         {
             door.setMoveAmount(0);
-            Room r = createRoom(door);
+            Room r = newRoom(door);
 
             if(_rooms.size() == 0)
             {
@@ -238,7 +238,7 @@ public class WorldCreator
         }
     }
 
-    private Room createRoom(GridComponent door)
+    private Room newRoom(GridComponent door)
     {
         ArrayList<GridComponent> currentOpenSquares = new ArrayList<GridComponent>() { };
         ArrayList<GridComponent> nextOpenMoves = new ArrayList<GridComponent>() { };
