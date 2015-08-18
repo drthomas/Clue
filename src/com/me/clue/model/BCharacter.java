@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.me.clue.Enums;
 import com.me.clue.Enums.CharacterContent;
 import com.me.clue.Enums.GridContent;
 import com.me.clue.ai.Choice;
@@ -15,27 +16,27 @@ import java.util.ArrayList;
 
 public class BCharacter
 {
-    private String                              _character;
-    private boolean                             _inGame;
+    protected String                              _character;
+    protected boolean                             _inGame;
     protected boolean                           _inRoom;
     protected boolean                           _toggleRoomEntry;
-    private boolean                             _isTurn; //This players turn
-    private boolean                             _isStart;
-    private boolean                             _win;
-    private float                               _x;
-    private float                               _y;
-    private float                               _xIndex;
-    private float                               _yIndex;
-    private int                                 _moveAmount;
+    protected boolean                             _isTurn; //This players turn
+    protected boolean                             _isStart;
+    protected boolean                             _win;
+    protected float                               _x;
+    protected float                               _y;
+    protected float                               _xIndex;
+    protected float                               _yIndex;
+    protected int                                 _moveAmount;
     protected GridComponent[][]                 _componentMatrix;
     protected GridComponent                     _currentNode;
-    private GridComponent                       _drawNode;
-    private CharacterContent                    _contentCode;
-    private ArrayList<String>                   _hand = new ArrayList<String>(){};
+    protected GridComponent                         _drawNode;
+    protected CharacterContent                      _contentCode;
+    protected ArrayList<String>                   _hand = new ArrayList<String>(){};
     protected ArrayList<String>                 _knownCards = new ArrayList<String>(){};
-    private ArrayList<String>                   _unknownCards = new ArrayList<String>(){};
-    private ArrayList<ArrayList<GridComponent>> _possiblePaths = new ArrayList<ArrayList<GridComponent>>(){ };
-    private ArrayList<GridComponent>            _currentPath = new ArrayList<GridComponent>() { };
+    protected ArrayList<String>                   _unknownCards = new ArrayList<String>(){};
+    protected ArrayList<ArrayList<GridComponent>> _possiblePaths = new ArrayList<ArrayList<GridComponent>>(){ };
+    protected ArrayList<GridComponent>            _currentPath = new ArrayList<GridComponent>() { };
     protected ArrayList<GridComponent>          _validMoves  = new ArrayList<GridComponent>() { };
 
     protected Sprite _sprite;
@@ -95,7 +96,6 @@ public class BCharacter
 
     private void initialize()
     {
-        _character = "";
         _inGame = true;
         _inRoom = false;
         _toggleRoomEntry = false;
@@ -123,23 +123,51 @@ public class BCharacter
 
     private void createSprite()
     {
-        _texture = new Texture(Gdx.files.internal("images/b.png"));
-        _sprite = new Sprite(_texture);
+        try
+        {
+            switch (_character)
+            {
+                case ("Green"):
+                    _texture = new Texture(Gdx.files.internal("images/b.png"));
+                    break;
+                case ("Mustard"):
+                    _texture = new Texture(Gdx.files.internal("images/b.png"));
+                    break;
+                case ("Peacock"):
+                    _texture = new Texture(Gdx.files.internal("images/b.png"));
+                    break;
+                case ("Plum"):
+                    _texture = new Texture(Gdx.files.internal("images/b.png"));
+                    break;
+                case ("Scarlet"):
+                    _texture = new Texture(Gdx.files.internal("images/b.png"));
+                    break;
+                case ("White"):
+                    _texture = new Texture(Gdx.files.internal("images/b.png"));
+                    break;
+                default:
+                    _texture = new Texture(Gdx.files.internal("images/pik.png"));
+            }
 
-        //TODO Each character needs a different sprite.
+            _sprite = new Sprite(_texture);
+        }
+        catch(Exception ex)
+        {
+            Gdx.app.log("BCharacter", "Image not found");
+        }
     }
 
-    public ArrayList<GridComponent> FindPath(GridComponent[][] componentMatrix, GridComponent startNode, GridComponent goalNode)
+    public ArrayList<GridComponent> findPath(GridComponent[][] componentMatrix, GridComponent startNode, GridComponent goalNode)
     {
         return Pathing.AStar(componentMatrix, startNode, goalNode);
     }
 
-    public ArrayList<GridComponent> BestPath(ArrayList<ArrayList<GridComponent>> paths)
+    public ArrayList<GridComponent> bestPath(ArrayList<ArrayList<GridComponent>> paths)
     {
         return Choice.GetBestPath(paths);
     }
 
-    public ArrayList<GridComponent> FindMoves(GridComponent[][] componentMatrix)
+    public ArrayList<GridComponent> findMoves(GridComponent[][] componentMatrix)
     {
         _validMoves.clear();
 
@@ -150,8 +178,8 @@ public class BCharacter
             {
                 for (GridComponent node : n)
                 {
-                    if (_inRoom && node.getContentCode() == GridContent.Door
-                            && node.getLocationName().equalsIgnoreCase(_currentNode.getLocationName()))
+                    if (_inRoom && node.getContentCode() == GridContent.Door &&
+                            node.getLocationName().equalsIgnoreCase(_currentNode.getLocationName()))
                     {
                         for (GridComponent tempNode : Pathing.FindValidMoves(node, _moveAmount))
                         {
@@ -183,16 +211,19 @@ public class BCharacter
         return _validMoves;
     }
 
-    public void Move(GridComponent component)
+    public void move(GridComponent component)
     {
         _x = component.getPosition().x;
         _y = component.getPosition().y;
         _xIndex = component.getXIndex();
         _yIndex = component.getYIndex();
         _currentNode = component;
+
+        _isStart = component.getContentCode() == Enums.GridContent.Start;
+        _inRoom = component.getContentCode() == Enums.GridContent.Room;
     }
 
-    public void Reset()
+    public void reset()
     {
         _hand = new ArrayList<String>() { };
         _knownCards = new ArrayList<String>() { };
@@ -215,7 +246,7 @@ public class BCharacter
     }
 
 
-    public void Draw(ShapeRenderer debugRenderer, Color c)
+    public void draw(ShapeRenderer debugRenderer, Color c)
     {
         debugRenderer.begin(ShapeRenderer.ShapeType.Line);
 

@@ -117,7 +117,9 @@ public class WorldRenderer
         _world.drawHUD();
 
         if (_debug)
+        {
             drawDebug();
+        }
     }
 
     private void drawValidMoves()
@@ -194,17 +196,34 @@ public class WorldRenderer
                 else if(component.getContentCode() == Enums.GridContent.Room)
                     _shapeRenderer.setColor(new Color(0.4078f, 0.1412f, 0, 0.8f));
                 else if(component.getContentCode() == Enums.GridContent.Start)
-                    _shapeRenderer.setColor(new Color(1, 1, 1, 0.8f));
+                    _shapeRenderer.setColor(new Color(1, 1, 1, 0.85f));
                 else if(component.getContentCode() == Enums.GridContent.Door)
                     _shapeRenderer.setColor(new Color(0.5882f, 0.1294f, 0.0863f, 0.8f));
                 else if(component.getContentCode() == Enums.GridContent.Wall)
                     _shapeRenderer.setColor(new Color(0.7176f, 0.5608f, 0.3216f, 0.8f));
 
                 _shapeRenderer.rect(x1, y1, -rect.width, -rect.height);
+
+
             }
         }
 
         _shapeRenderer.end();
+
+        //Draw the ID onto the block
+        for(GridComponent[] c : _world.getComponentMatrix().getMatrix())
+        {
+            for(GridComponent component : c)
+            {
+                float x1 = component.getPosition().x;
+                float y1 = component.getPosition().y;
+
+                _debugBatch.begin();
+                _debugFont.draw(_debugBatch, "" + component.getID(),
+                        x1 - (component.getWidth() / 2), y1 - (component.getHeight() / 2));
+                _debugBatch.end();
+            }
+        }
     }
     //endregion
 }

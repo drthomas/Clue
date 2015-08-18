@@ -32,7 +32,7 @@ public class PlayerCharacter extends BCharacter
     }
 
     @Override
-    public void Move(GridComponent goalNode)
+    public void move(GridComponent goalNode)
     {
         _currentGoalNode = goalNode;
 

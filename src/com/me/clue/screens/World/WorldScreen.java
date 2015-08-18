@@ -278,7 +278,7 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
 
         float ratio = (initialDistance - distance);
 
-        _renderer.getCamera().zoom = MathUtils.clamp((initialScale * ratio) / 100, 0.5f, 1.5f);
+        _renderer.getCamera().zoom = MathUtils.clamp((initialScale * ratio) / 100, 0.5f, 3f);
 
         return true;
     }
@@ -422,7 +422,7 @@ public class WorldScreen implements Screen, GestureListener, InputProcessor
     @Override
     public boolean scrolled(int amount)
     {
-        if(amount > 0 && _renderer.getCamera().zoom < 1.5f)
+        if(amount > 0 && _renderer.getCamera().zoom < 3f)
         {
             _renderer.zoomIn();
         }

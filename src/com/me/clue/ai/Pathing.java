@@ -236,7 +236,7 @@ public class Pathing
         {
             for (GridComponent component : c)
             {
-                component.setContentCode(null);
+                component.setParentNode(null);
             }
         }
     }
@@ -255,7 +255,7 @@ public class Pathing
      */
     private static float HeuristicCostEstimate(GridComponent current, GridComponent end)
     {
-        return Math.abs(current.getXIndex() - end.getXIndex()) +
-                Math.abs(current.getYIndex() - end.getYIndex()); //Optimal distance between current node and goal node
+        return (float)Math.sqrt(Math.pow(Math.abs(current.getXIndex() - end.getXIndex()), 2) +
+                Math.pow(Math.abs(current.getYIndex() - end.getYIndex()), 2)); //Optimal distance between current node and goal node
     }
 }

@@ -1,6 +1,7 @@
 package com.me.clue.model;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.me.clue.ai.Choice;
 
 import java.util.ArrayList;
@@ -49,6 +50,54 @@ public class NPC extends BCharacter
     public String DisplayCard(ArrayList<String> cardsToShow)
     {
         return cardsToShow.get(new Random().nextInt(cardsToShow.size()));
+    }
+
+    public void move()
+    {
+        if (_currentPath.size() > 0)
+        {
+            if ((_currentPathIndex + _moveAmount) < (_currentPath.size()))
+            {
+                _currentPathIndex += _moveAmount;
+
+                super.move(getCurrentPath().get(getCurrentPath().indexOf(getCurrentPath().get(getCurrentPathIndex()))));
+            }
+            else
+            {
+                Gdx.app.log("NPC", "Question...");
+
+                ArrayList<String> UnknownCharacters = new ArrayList<String>() { };
+                String qCharacter = null;
+                ArrayList<String> UnknownWeapons = new ArrayList<String>() { };
+                String qWeapon = null;
+
+                move(_currentPath.get(_currentPath.size() - 1));
+                _currentPath.clear();
+
+                /*for(String item : _questionControl.CMBCharacter.Items)
+                {
+                    if (tempPlayer.UnknownCards.Contains(item))
+                    {
+                        UnknownCharacters.Add(item);
+                    }
+                }*/
+
+                /*foreach (string item in _questionControl.CMBWeapon.Items)
+                {
+                    if (tempPlayer.UnknownCards.Contains(item))
+                    {
+                        UnknownWeapons.Add(item);
+                    }
+                }*/
+
+                //qCharacter = UnknownCharacters[rnd.Next(0, UnknownCharacters.Count - 1)];
+                //qWeapon = UnknownWeapons[rnd.Next(0, UnknownWeapons.Count - 1)];
+
+                //bool ans = Question(qCharacter, tempPlayer.CurrentLocation, qWeapon);
+
+
+            }
+        }
     }
 
     public boolean WantNewPath()

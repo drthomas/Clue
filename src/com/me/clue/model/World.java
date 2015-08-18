@@ -15,8 +15,6 @@ import com.me.clue.ai.Pathing;
 import com.me.clue.carddata.Cards;
 import com.me.clue.huds.WorldHUD;
 import com.me.clue.screens.World.WorldCreator;
-import com.me.clue.screens.World.WorldScreen;
-import com.me.clue.view.WorldRenderer;
 
 import java.util.ArrayList;
 
@@ -221,44 +219,32 @@ public class World
         {
             NPC tempPlayer = (NPC)_currentPlayer;
 
-            /*if (tempPlayer.getCurrentNode().getContentCode() == Enums.GridContent.Start)
+            if (tempPlayer.getCurrentNode().getContentCode() == Enums.GridContent.Start)
             {
-                FindPath();
-            }*/
-
-            //FindPath();
-            //Move();
-
+                findPath();
+            }
 
             //TODO Determine if this AI wants to continue on the current path using known cards or random selection
             //      If so, automove on a roll.
             //      else, find a new path on a roll.
 
-            /*if (tempPlayer.WantNewPath())
+            if (tempPlayer.WantNewPath())
             {
                 tempPlayer.getCurrentPath().clear();
+                findPath();
             }
 
-            if (tempPlayer.getCurrentPath().size() > 0) //Keep Moving along the current path
-            {
-                //btnMove.Enabled = true;
-            }
-            else  //Find a new path
-            {
-                //FindPath();
-                //btnMove.Enabled = true;
-            }*/
-
-            tempPlayer.FindMoves(_componentMatrix.getMatrix());
+            tempPlayer.findMoves(_componentMatrix.getMatrix());
+            tempPlayer.move();
         }
         if (_currentPlayer instanceof PlayerCharacter)
         {
             PlayerCharacter tempPlayer = (PlayerCharacter)_currentPlayer;
-            tempPlayer.FindMoves(_componentMatrix.getMatrix());
+            tempPlayer.findMoves(_componentMatrix.getMatrix());
         }
     }
 
-    private void FindPath()
+    private void findPath()
     {
         NPC tempPlayer = (NPC)_currentPlayer;
         ArrayList<GridComponent> currentPath;
@@ -267,6 +253,7 @@ public class World
 
         //Resets the paths
         tempPlayer.setCurrentPathIndex(0);
+        tempPlayer.getCurrentPath().clear();
 
         for (GridComponent[] c : _componentMatrix.getMatrix())
         {
@@ -281,44 +268,25 @@ public class World
             }
         }
 
-        //Find all goals
-        for (GridComponent[] c : _componentMatrix.getMatrix())
+        //Find all goals(currently doors)
+        for(Room room : _worldCreator.getRooms())
         {
-            for(GridComponent component : c)
+            for(GridComponent door : room.getDoors())
             {
-                if (component.getContentCode() == Enums.GridContent.Door)
-                {
-                    goals.add(component);
-                }
+                goals.add(door);
             }
         }
 
         //Finds all possible paths
         for (GridComponent goalNode : goals)
         {
-            currentPath = tempPlayer.FindPath(_componentMatrix.getMatrix(), tempPlayer.getCurrentNode(), goalNode);
+            currentPath = tempPlayer.findPath(_componentMatrix.getMatrix(),
+                    tempPlayer.getCurrentNode(), goalNode);
             if (currentPath != null)
             {
                 tempPlayer.getPossiblePaths().add(currentPath);
             }
         }
-
-        //Finds the shortest path if one exists
-        //if (tempPlayer.PossiblePaths.Count > 0)
-        //{
-        //    finalPath = CurrentPlayer.BestPath(CurrentPlayer.PossiblePaths);
-        //}
-        //else
-        //{
-        //    Console.WriteLine("No Path Found");
-        //}
-
-        //tempPlayer.CurrentPath.Clear();
-        //if (finalPath != null)
-        //{
-        //    tempPlayer.CurrentPath = finalPath;
-        //}
-
 
         //Find a random path
         if (tempPlayer.getPossiblePaths().size() > 0)
@@ -339,72 +307,16 @@ public class World
         }
 
         //Sets the components in the CurrentPath for drawing
-        if (tempPlayer.getCurrentPath() != null)
+        /*if (tempPlayer.getCurrentPath() != null)
         {
             for (GridComponent component : tempPlayer.getCurrentPath())
             {
                 component.setIsPath(true);
             }
-        }
+        }*/
     }
 
-    public void Move()
-    {
-        if (_currentPlayer instanceof NPC)
-        {
-            //TODO This should be its own function in NPC
 
-            NPC tempPlayer = (NPC)_currentPlayer;
-            if (tempPlayer.getCurrentPath().size() > 0)
-            {
-                if ((tempPlayer.getCurrentPathIndex() + tempPlayer.getMoveAmount()) <
-                        (tempPlayer.getCurrentPath().size()))
-                {
-                    tempPlayer.setCurrentPathIndex(tempPlayer.getCurrentPathIndex() +
-                                                        tempPlayer.getMoveAmount());
-
-                    tempPlayer.Move(tempPlayer.getCurrentPath().get(tempPlayer.getCurrentPath().indexOf(tempPlayer.getCurrentPath().get(tempPlayer.getCurrentPathIndex()))));
-                }
-                else
-                {
-                    Gdx.app.log("World", "Question...");
-                    /*
-                    ArrayList<String> UnknownCharacters = new ArrayList<String>() { };
-                    String qCharacter = null;
-                    ArrayList<String> UnknownWeapons = new ArrayList<String>() { };
-                    String qWeapon = null;
-
-                    for(String item : _questionControl.CMBCharacter.Items)
-                    {
-                        if (tempPlayer.UnknownCards.Contains(item))
-                        {
-                            UnknownCharacters.Add(item);
-                        }
-                    }
-
-                    foreach (string item in _questionControl.CMBWeapon.Items)
-                    {
-                        if (tempPlayer.UnknownCards.Contains(item))
-                        {
-                            UnknownWeapons.Add(item);
-                        }
-                    }
-
-                    qCharacter = UnknownCharacters[rnd.Next(0, UnknownCharacters.Count - 1)];
-                    qWeapon = UnknownWeapons[rnd.Next(0, UnknownWeapons.Count - 1)];
-
-                    tempPlayer.Move(tempPlayer.CurrentPath[tempPlayer.CurrentPath.Count - 1]);
-
-                    bool ans = Question(qCharacter, tempPlayer.CurrentLocation, qWeapon);
-
-                    tempPlayer.CurrentPath.Clear();
-                    */
-                }
-            }
-
-            //btnMove.Enabled = false;
-        }
-    }
 
     public void drawMap(OrthographicCamera camera)
     {
