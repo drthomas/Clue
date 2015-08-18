@@ -19,7 +19,7 @@ public class Cards
     public ArrayList<String> getDeck() { return _deck; }
     public void setDeck(ArrayList<String> list) { _deck = list; }
 
-    public ArrayList<String> getSolutionk() { return _solution; }
+    public ArrayList<String> getSolution() { return _solution; }
     public void setSolution(ArrayList<String> list) { _solution = list; }
 
     public ArrayList<ArrayList<String>> getAllCards() { return _allCards; }

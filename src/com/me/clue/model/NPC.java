@@ -3,6 +3,9 @@ package com.me.clue.model;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.me.clue.ai.Choice;
+import com.me.clue.carddata.Cards;
+import com.me.clue.carddata.CharacterCards;
+import com.me.clue.carddata.WeaponCards;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -10,24 +13,20 @@ import java.util.Random;
 
 public class NPC extends BCharacter
 {
+    private static Random rnd = new Random();
     private ArrayList<String> _shownCards = new ArrayList<String>() { };
     private int _currentPathIndex = 0;   //Current index on a path
-    private GridComponent _currentGoal = new GridComponent();
-
     public int getCurrentPathIndex() { return _currentPathIndex; }
     public void setCurrentPathIndex(int index) { _currentPathIndex = index; }
-
-    public GridComponent getCurreontGoal() { return _currentGoal; }
-    public void setCurrentGoal(GridComponent goal) { _currentGoal = goal; }
 
     public NPC(String name)
     {
         super(name);
     }
 
-    public String ChooseRandomGoal()
+    public String chooseRandomGoal()
     {
-        return Choice.ChooseRandomGoal();
+        return _choice.ChooseRandomGoal();
     }
 
     public GridComponent ChooseRandomUnknownGoal(ArrayList<GridComponent> locations)
@@ -36,18 +35,16 @@ public class NPC extends BCharacter
 
         for (GridComponent location : locations)
         {
-            if (_knownCards.contains(location.getLocationName()))
+            if (!_knownCards.contains(location.getLocationName()))
             {
                 newLocations.add(location);
             }
         }
 
-        _currentGoal = Choice.ChooseRandomGoal(newLocations);
-
-        return _currentGoal;
+        return  _choice.ChooseRandomGoal(newLocations);
     }
 
-    public String DisplayCard(ArrayList<String> cardsToShow)
+    public String displayCard(ArrayList<String> cardsToShow)
     {
         return cardsToShow.get(new Random().nextInt(cardsToShow.size()));
     }
@@ -64,49 +61,55 @@ public class NPC extends BCharacter
             }
             else
             {
-                Gdx.app.log("NPC", "Question...");
-
-                ArrayList<String> UnknownCharacters = new ArrayList<String>() { };
-                String qCharacter = null;
-                ArrayList<String> UnknownWeapons = new ArrayList<String>() { };
-                String qWeapon = null;
+                ArrayList<String> unknownCharacters = new ArrayList<String>() { };
+                String qCharacter;
+                ArrayList<String> unknownWeapons = new ArrayList<String>() { };
+                String qWeapon;
 
                 move(_currentPath.get(_currentPath.size() - 1));
                 _currentPath.clear();
 
-                /*for(String item : _questionControl.CMBCharacter.Items)
+                for(String item : CharacterCards.Characters)
                 {
-                    if (tempPlayer.UnknownCards.Contains(item))
+                    if (!_knownCards.contains(item))
                     {
-                        UnknownCharacters.Add(item);
+                        unknownCharacters.add(item);
                     }
-                }*/
+                }
 
-                /*foreach (string item in _questionControl.CMBWeapon.Items)
+                for (String item : WeaponCards.Weapons)
                 {
-                    if (tempPlayer.UnknownCards.Contains(item))
+                    if (!_knownCards.contains(item))
                     {
-                        UnknownWeapons.Add(item);
+                        unknownWeapons.add(item);
                     }
-                }*/
+                }
 
-                //qCharacter = UnknownCharacters[rnd.Next(0, UnknownCharacters.Count - 1)];
-                //qWeapon = UnknownWeapons[rnd.Next(0, UnknownWeapons.Count - 1)];
+                qCharacter = unknownCharacters.get(rnd.nextInt(unknownCharacters.size()));
+                qWeapon = unknownWeapons.get(rnd.nextInt(unknownWeapons.size()));
 
-                //bool ans = Question(qCharacter, tempPlayer.CurrentLocation, qWeapon);
+                Gdx.app.log("NPC", "Question: " + qCharacter + ", " +
+                                _currentNode.getLocationName() + ", " + qWeapon);
 
-
+                _win = question(qCharacter, _currentNode.getLocationName(), qWeapon);
             }
         }
     }
 
-    public boolean WantNewPath()
+    public boolean wantNewPath()
     {
-        return _knownCards.contains(_currentGoal.getLocationName());
+        boolean ret = true;
+
+        if(_currentPath.size() > 0)
+        {
+            ret = _knownCards.contains(_currentPath.get(_currentPath.size() - 1).getLocationName());
+        }
+
+        return ret;
     }
 
-    public boolean Question(String characterCard, String weaponCard, ArrayList<String> solution)
+    public boolean question(String characterCard, String locationCard, String weaponCard)
     {
-        return Choice.Ask(characterCard, _currentNode.getLocationName(), weaponCard, solution);
+        return _choice.Ask(characterCard, locationCard, weaponCard);
     }
 }

@@ -1,5 +1,6 @@
 package com.me.clue.ai;
 
+import com.me.clue.carddata.Cards;
 import com.me.clue.carddata.LocationCards;
 import com.me.clue.model.GridComponent;
 
@@ -8,8 +9,11 @@ import java.util.Random;
 
 public class Choice
 {
+    private  Random rnd = new Random();
+    private  Cards _cards = new Cards();
 
-    private static Random rnd = new Random();
+    public Cards getCards() { return _cards; }
+    public void setCards(Cards c) { _cards = c; }
 
     public Choice()
     {
@@ -18,7 +22,7 @@ public class Choice
     /**
      * Returns any random location
      */
-    public static String ChooseRandomGoal()
+    public String ChooseRandomGoal()
     {
         int index = rnd.nextInt(LocationCards.Locations.size());
 
@@ -28,14 +32,14 @@ public class Choice
     /**
      * Returns a random location from a provided list
      */
-    public static GridComponent ChooseRandomGoal(ArrayList<GridComponent> locations)
+    public GridComponent ChooseRandomGoal(ArrayList<GridComponent> locations)
     {
         int index = rnd.nextInt(locations.size());
 
         return locations.get(index);
     }
 
-    public static ArrayList<GridComponent> GetBestPath(ArrayList<ArrayList<GridComponent>> paths)
+    public ArrayList<GridComponent> GetBestPath(ArrayList<ArrayList<GridComponent>> paths)
     {
         ArrayList<GridComponent> bestPath = null;
 
@@ -59,9 +63,11 @@ public class Choice
         return bestPath;
     }
 
-    public static boolean Ask(String characterCard, String locationCard, String weaponCard, ArrayList<String> solution)
+    public boolean Ask(String characterCard, String locationCard, String weaponCard)
     {
-        return solution.contains(characterCard) && solution.contains(locationCard) && solution.contains(weaponCard);
+        return _cards.getSolution().contains(characterCard) &&
+                _cards.getSolution().contains(locationCard) &&
+                _cards.getSolution().contains(weaponCard);
     }
 }
 

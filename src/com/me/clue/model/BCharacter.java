@@ -10,19 +10,20 @@ import com.me.clue.Enums.CharacterContent;
 import com.me.clue.Enums.GridContent;
 import com.me.clue.ai.Choice;
 import com.me.clue.ai.Pathing;
+import com.me.clue.carddata.Cards;
 
 import java.util.ArrayList;
 
 
 public class BCharacter
 {
-    protected String                              _character;
-    protected boolean                             _inGame;
+    protected String                            _character;
+    protected boolean                           _inGame;
     protected boolean                           _inRoom;
     protected boolean                           _toggleRoomEntry;
-    protected boolean                             _isTurn; //This players turn
-    protected boolean                             _isStart;
-    protected boolean                             _win;
+    protected boolean                           _isTurn; //This players turn
+    protected boolean                           _isStart;
+    protected boolean                           _win;
     protected float                               _x;
     protected float                               _y;
     protected float                               _xIndex;
@@ -38,6 +39,7 @@ public class BCharacter
     protected ArrayList<ArrayList<GridComponent>> _possiblePaths = new ArrayList<ArrayList<GridComponent>>(){ };
     protected ArrayList<GridComponent>            _currentPath = new ArrayList<GridComponent>() { };
     protected ArrayList<GridComponent>          _validMoves  = new ArrayList<GridComponent>() { };
+    protected Choice                            _choice = new Choice();
 
     protected Sprite _sprite;
     protected Texture _texture;
@@ -55,6 +57,9 @@ public class BCharacter
 
     public boolean isStart() { return _isStart; }
     public void setStart(boolean s) { _isStart = s; }
+
+    public boolean getWin() { return _win; }
+    public void setWin(boolean w) { _win = w; }
 
     public int getMoveAmount() { return _moveAmount; }
     public void setMoveAmount(int amount) { _moveAmount = amount; }
@@ -82,6 +87,9 @@ public class BCharacter
 
     public ArrayList<GridComponent> getValidMoves() { return _validMoves; }
     public void setValidMoves(ArrayList<GridComponent> list) { _validMoves = list; }
+
+    public Choice getChoice() { return _choice; }
+    public void setChoice(Choice c) { _choice = c; }
 
 
     public Sprite getSprite() { return _sprite; }
@@ -164,7 +172,7 @@ public class BCharacter
 
     public ArrayList<GridComponent> bestPath(ArrayList<ArrayList<GridComponent>> paths)
     {
-        return Choice.GetBestPath(paths);
+        return _choice.GetBestPath(paths);
     }
 
     public ArrayList<GridComponent> findMoves(GridComponent[][] componentMatrix)
@@ -243,6 +251,11 @@ public class BCharacter
         _possiblePaths = new ArrayList<ArrayList<GridComponent>>() { };
         _currentPath = new ArrayList<GridComponent>() { };
         _validMoves = new ArrayList<GridComponent>() { };
+    }
+
+    public void updateSolution(Cards cards)
+    {
+        _choice.setCards(cards);
     }
 
 

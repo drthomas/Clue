@@ -161,6 +161,8 @@ public class World
         _deck = new Cards();
         _deck.shuffle();
         _deck.deal(_playerList);
+
+        _currentPlayer.updateSolution(_deck);
     }
 
     public void createHUDStage(WorldHUD hud)
@@ -228,7 +230,7 @@ public class World
             //      If so, automove on a roll.
             //      else, find a new path on a roll.
 
-            if (tempPlayer.WantNewPath())
+            if (tempPlayer.wantNewPath())
             {
                 tempPlayer.getCurrentPath().clear();
                 findPath();
@@ -236,6 +238,11 @@ public class World
 
             tempPlayer.findMoves(_componentMatrix.getMatrix());
             tempPlayer.move();
+
+            if(tempPlayer.getWin())
+            {
+                Gdx.app.log("World", tempPlayer.getCharacter() + " wins!!");
+            }
         }
         if (_currentPlayer instanceof PlayerCharacter)
         {
@@ -303,7 +310,7 @@ public class World
         if (finalPath != null)
         {
             tempPlayer.setCurrentPath(finalPath);
-            tempPlayer.setCurrentGoal(finalPath.get(finalPath.size() - 1));
+            //tempPlayer.setCurrentGoal(finalPath.get(finalPath.size() - 1));
         }
 
         //Sets the components in the CurrentPath for drawing
