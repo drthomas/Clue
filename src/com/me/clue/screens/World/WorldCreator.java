@@ -308,8 +308,7 @@ public class WorldCreator
     {
         char[][] matrix;
 
-            try {
-                BufferedReader reader = new BufferedReader(handle.reader());
+            try (BufferedReader reader = new BufferedReader(handle.reader())) {
                 ArrayList<String> lines = new ArrayList<>();
                 String line = reader.readLine();
 
